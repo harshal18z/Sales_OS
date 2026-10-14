@@ -1,0 +1,14 @@
+{
+  "name": "SalesOS AI",
+  "short_name": "SalesOS",
+  "description": "The AI-native operating system for sales — research, outreach, meetings, and pipeline.",
+  "start_url": "/dashboard",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FAFAFA",
+  "theme_color": "#111111",
+  "icons": [
+    { "src": "/favicon.ico", "sizes": "any", "type": "image/x-icon" }
+  ]
+}

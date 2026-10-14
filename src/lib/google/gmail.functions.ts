@@ -1,0 +1,14 @@
+import { callServerFn } from "@/lib/server-fn";
+const action = (name: string) => callServerFn<any, any>(name);
+export const gmailListMessages = action("gmailListMessages");
+export const gmailGetMessage = action("gmailGetMessage");
+export const gmailListLabels = action("gmailListLabels");
+export const gmailListThreads = action("gmailListThreads");
+export const gmailSend = action("gmailSend");
+export const gmailReply = action("gmailReply");
+export const gmailForward = action("gmailForward");
+export const gmailCreateDraft = action("gmailCreateDraft");
+export const gmailMarkRead = action("gmailMarkRead");
+export const gmailTrash = action("gmailTrash");
+export const gmailScheduleSend = action("gmailScheduleSend");
+export const gmailTrackReplies = action("gmailTrackReplies");
