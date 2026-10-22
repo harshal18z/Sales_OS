@@ -1,16 +1,46 @@
 import { createFileRoute, useNavigate } from "@/lib/router-compat";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Building2, Download, GitMerge, Loader2, Mail, Megaphone, Pencil, Plus, RefreshCw, Search, Trash2, Upload, UserPlus, Users } from "lucide-react";
+import {
+  Building2,
+  Download,
+  GitMerge,
+  Loader2,
+  Mail,
+  Megaphone,
+  Pencil,
+  Plus,
+  RefreshCw,
+  Search,
+  Trash2,
+  Upload,
+  UserPlus,
+  Users,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@/lib/query";
 import { useWorkspace } from "@/hooks/use-workspace";
-import { useCompanies, useContacts, useDeleteRow, useInsertRow, useLeads, useUpdateRow } from "@/hooks/use-data";
+import {
+  useCompanies,
+  useContacts,
+  useDeleteRow,
+  useInsertRow,
+  useLeads,
+  useUpdateRow,
+} from "@/hooks/use-data";
 import { useAIDiscoverDecisionMakers, useAIEmail, useAIResearch } from "@/hooks/use-ai";
 import { useWorkspaceMembers } from "@/hooks/use-workspace-members";
 import {
-  EmptyState, Field, GhostBtn, Modal, PageHeader, PrimaryBtn, Select,
-  SkeletonList, TextArea, TextInput,
+  EmptyState,
+  Field,
+  GhostBtn,
+  Modal,
+  PageHeader,
+  PrimaryBtn,
+  Select,
+  SkeletonList,
+  TextArea,
+  TextInput,
 } from "@/components/app/data-ui";
 import { ImportWizardModal } from "@/components/import/import-wizard";
 import { BulkToolbar } from "@/components/import/bulk-toolbar";
@@ -85,7 +115,8 @@ function CompaniesPage() {
   function toggleRow(id: string) {
     setSelectedIds((prev) => {
       const next = new Set(prev);
-      if (next.has(id)) next.delete(id); else next.add(id);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
       return next;
     });
   }
@@ -97,17 +128,31 @@ function CompaniesPage() {
       return next;
     });
   }
-  function clearSelection() { setSelectedIds(new Set()); }
+  function clearSelection() {
+    setSelectedIds(new Set());
+  }
 
   async function handleBulkDelete() {
     const ids = Array.from(selectedIds);
     if (ids.length === 0) return;
     if (!confirm(`Delete ${ids.length} companies?`)) return;
     setBusy(true);
-    const { error } = await supabase.from("companies").update({ deleted_at: new Date().toISOString() }).in("id", ids);
+    const { error } = await supabase
+      .from("companies")
+      .update({ deleted_at: new Date().toISOString() })
+      .in("id", ids);
     if (error) toast.error(error.message);
     else {
-      if (workspaceId) await supabase.from("activity_logs").insert({ workspace_id: workspaceId, entity_type: "companies", entity_id: null, action: "bulk.delete", metadata: { count: ids.length } as never });
+      if (workspaceId)
+        await supabase
+          .from("activity_logs")
+          .insert({
+            workspace_id: workspaceId,
+            entity_type: "companies",
+            entity_id: null,
+            action: "bulk.delete",
+            metadata: { count: ids.length } as never,
+          });
       toast.success(`Deleted ${ids.length} companies`);
       clearSelection();
       qc.invalidateQueries({ queryKey: ["companies"] });
@@ -119,10 +164,22 @@ function CompaniesPage() {
     const ids = Array.from(selectedIds);
     if (ids.length === 0 || !assignOwner) return;
     setBusy(true);
-    const { error } = await supabase.from("companies").update({ owner_id: assignOwner }).in("id", ids);
+    const { error } = await supabase
+      .from("companies")
+      .update({ owner_id: assignOwner })
+      .in("id", ids);
     if (error) toast.error(error.message);
     else {
-      if (workspaceId) await supabase.from("activity_logs").insert({ workspace_id: workspaceId, entity_type: "companies", entity_id: null, action: "bulk.assign_owner", metadata: { count: ids.length, owner_id: assignOwner } as never });
+      if (workspaceId)
+        await supabase
+          .from("activity_logs")
+          .insert({
+            workspace_id: workspaceId,
+            entity_type: "companies",
+            entity_id: null,
+            action: "bulk.assign_owner",
+            metadata: { count: ids.length, owner_id: assignOwner } as never,
+          });
       toast.success(`Assigned ${ids.length} companies`);
       setAssignOwner("");
       qc.invalidateQueries({ queryKey: ["companies"] });
@@ -131,12 +188,21 @@ function CompaniesPage() {
   }
 
   function handleExport() {
-    const source = selectedIds.size > 0 ? filtered.filter((r: any) => selectedIds.has(r.id)) : filtered;
-    if (source.length === 0) { toast.error("Nothing to export"); return; }
+    const source =
+      selectedIds.size > 0 ? filtered.filter((r: any) => selectedIds.has(r.id)) : filtered;
+    if (source.length === 0) {
+      toast.error("Nothing to export");
+      return;
+    }
     const csv = toCSV(
       source.map((r: any) => ({
-        name: r.name, domain: r.domain, industry: r.industry, size: r.size,
-        revenue: r.revenue, location: r.location, description: r.description,
+        name: r.name,
+        domain: r.domain,
+        industry: r.industry,
+        size: r.size,
+        revenue: r.revenue,
+        location: r.location,
+        description: r.description,
       })),
       ["name", "domain", "industry", "size", "revenue", "location", "description"],
     );
@@ -153,10 +219,15 @@ function CompaniesPage() {
 
   async function handleRefreshResearch() {
     const url = companyUrl(selected);
-    if (!url) { toast.error("Add a website or domain first"); return; }
+    if (!url) {
+      toast.error("Add a website or domain first");
+      return;
+    }
     try {
       await research.mutateAsync({ url, companyId: selected.id, force: true });
-    } catch { /* toast handled */ }
+    } catch {
+      /* toast handled */
+    }
   }
 
   async function handleDiscoverDecisionMakers() {
@@ -165,7 +236,9 @@ function CompaniesPage() {
       const res: any = await discover.mutateAsync({ companyId: selected.id, count: 8 });
       const o = res?.output ?? res;
       toast.success(`${o?.created ?? 0} new · ${o?.updated ?? 0} updated`);
-    } catch { /* toast handled */ }
+    } catch {
+      /* toast handled */
+    }
   }
 
   async function handleGenerateOutreach() {
@@ -177,7 +250,9 @@ function CompaniesPage() {
         save: true,
       });
       navigate({ to: "/emails" });
-    } catch { /* toast handled */ }
+    } catch {
+      /* toast handled */
+    }
   }
 
   async function handleCreateCampaign() {
@@ -210,22 +285,38 @@ function CompaniesPage() {
               <Search className="h-3.5 w-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-foreground-subtle" />
               <input
                 value={query}
-                onChange={(e) => { setQuery(e.target.value); setPage(0); }}
+                onChange={(e) => {
+                  setQuery(e.target.value);
+                  setPage(0);
+                }}
                 placeholder="Search companies"
                 className="h-8 w-56 rounded-md bg-surface-muted border border-border pl-8 pr-3 text-xs text-foreground placeholder:text-foreground-subtle focus:outline-none focus:ring-2 focus:ring-ring"
               />
             </div>
             <select
               value={industryFilter}
-              onChange={(e) => { setIndustryFilter(e.target.value); setPage(0); }}
+              onChange={(e) => {
+                setIndustryFilter(e.target.value);
+                setPage(0);
+              }}
               className="h-8 rounded-md bg-surface-muted border border-border px-2 text-xs text-foreground"
             >
               <option value="">All industries</option>
-              {industries.map((i) => <option key={i} value={i}>{i}</option>)}
+              {industries.map((i) => (
+                <option key={i} value={i}>
+                  {i}
+                </option>
+              ))}
             </select>
-            <GhostBtn onClick={() => setDupOpen(true)}><GitMerge className="h-3 w-3" /> Duplicates</GhostBtn>
-            <GhostBtn onClick={handleExport}><Download className="h-3 w-3" /> Export</GhostBtn>
-            <GhostBtn onClick={() => setImportOpen(true)}><Upload className="h-3 w-3" /> Import</GhostBtn>
+            <GhostBtn onClick={() => setDupOpen(true)}>
+              <GitMerge className="h-3 w-3" /> Duplicates
+            </GhostBtn>
+            <GhostBtn onClick={handleExport}>
+              <Download className="h-3 w-3" /> Export
+            </GhostBtn>
+            <GhostBtn onClick={() => setImportOpen(true)}>
+              <Upload className="h-3 w-3" /> Import
+            </GhostBtn>
             <PrimaryBtn onClick={() => setCreating(true)}>
               <Plus className="h-3.5 w-3.5" /> New company
             </PrimaryBtn>
@@ -243,17 +334,25 @@ function CompaniesPage() {
               <EmptyState
                 icon={Building2}
                 title={rows.length === 0 ? "No companies yet" : "No matches"}
-                description={rows.length === 0 ? "Add your first target account to start building intelligence." : "Try adjusting your filters."}
-                action={rows.length === 0 && (
-                  <PrimaryBtn onClick={() => setCreating(true)}>
-                    <Plus className="h-3.5 w-3.5" /> New company
-                  </PrimaryBtn>
-                )}
+                description={
+                  rows.length === 0
+                    ? "Add your first target account to start building intelligence."
+                    : "Try adjusting your filters."
+                }
+                action={
+                  rows.length === 0 && (
+                    <PrimaryBtn onClick={() => setCreating(true)}>
+                      <Plus className="h-3.5 w-3.5" /> New company
+                    </PrimaryBtn>
+                  )
+                }
               />
             ) : (
               <>
                 <BulkToolbar count={selectedIds.size} onClear={clearSelection}>
-                  <GhostBtn onClick={handleExport}><Download className="h-3 w-3" /> Export selected</GhostBtn>
+                  <GhostBtn onClick={handleExport}>
+                    <Download className="h-3 w-3" /> Export selected
+                  </GhostBtn>
                   <select
                     value={assignOwner}
                     onChange={(e) => setAssignOwner(e.target.value)}
@@ -261,7 +360,9 @@ function CompaniesPage() {
                   >
                     <option value="">Assign owner…</option>
                     {(members.data ?? []).map((m) => (
-                      <option key={m.user_id} value={m.user_id}>{m.full_name ?? m.email ?? m.user_id.slice(0, 8)}</option>
+                      <option key={m.user_id} value={m.user_id}>
+                        {m.full_name ?? m.email ?? m.user_id.slice(0, 8)}
+                      </option>
                     ))}
                   </select>
                   <GhostBtn onClick={handleBulkAssignOwner} disabled={busy || !assignOwner}>
@@ -279,7 +380,9 @@ function CompaniesPage() {
                           <input
                             type="checkbox"
                             aria-label="Select page"
-                            checked={paged.length > 0 && paged.every((c: any) => selectedIds.has(c.id))}
+                            checked={
+                              paged.length > 0 && paged.every((c: any) => selectedIds.has(c.id))
+                            }
                             onChange={togglePage}
                             className="h-3.5 w-3.5 rounded border-border"
                           />
@@ -314,7 +417,11 @@ function CompaniesPage() {
                               </div>
                               <div className="min-w-0">
                                 <div className="text-foreground font-medium truncate">{c.name}</div>
-                                {c.domain && <div className="text-[11px] text-foreground-subtle truncate">{c.domain}</div>}
+                                {c.domain && (
+                                  <div className="text-[11px] text-foreground-subtle truncate">
+                                    {c.domain}
+                                  </div>
+                                )}
                               </div>
                             </div>
                           </td>
@@ -324,14 +431,20 @@ function CompaniesPage() {
                           <td className="px-4 py-3">
                             <div className="flex items-center gap-1 justify-end">
                               <button
-                                onClick={(e) => { e.stopPropagation(); setEditing(c); }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setEditing(c);
+                                }}
                                 className="h-7 w-7 grid place-items-center rounded-md border border-border text-foreground-muted hover:text-foreground"
                                 aria-label="Edit"
                               >
                                 <Pencil className="h-3 w-3" />
                               </button>
                               <button
-                                onClick={(e) => { e.stopPropagation(); handleDelete(c.id); }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDelete(c.id);
+                                }}
                                 className="h-7 w-7 grid place-items-center rounded-md border border-border text-foreground-muted hover:text-foreground"
                                 aria-label="Delete"
                               >
@@ -347,10 +460,14 @@ function CompaniesPage() {
 
                 {totalPages > 1 && (
                   <div className="mt-4 flex items-center justify-between text-[12px] text-foreground-muted">
-                    <span>Page {page + 1} of {totalPages}</span>
+                    <span>
+                      Page {page + 1} of {totalPages}
+                    </span>
                     <div className="flex gap-2">
                       <GhostBtn onClick={() => setPage((p) => Math.max(0, p - 1))}>Prev</GhostBtn>
-                      <GhostBtn onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}>Next</GhostBtn>
+                      <GhostBtn onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}>
+                        Next
+                      </GhostBtn>
                     </div>
                   </div>
                 )}
@@ -363,7 +480,9 @@ function CompaniesPage() {
         <aside className="col-span-12 lg:col-span-5 bg-surface/40">
           <div className="p-6">
             {!selected ? (
-              <div className="text-[12px] text-foreground-subtle">Select a company to see details.</div>
+              <div className="text-[12px] text-foreground-subtle">
+                Select a company to see details.
+              </div>
             ) : (
               <div className="space-y-4">
                 <div className="flex items-start gap-3">
@@ -389,22 +508,40 @@ function CompaniesPage() {
                 </div>
 
                 <div className="rounded-xl border border-border bg-surface p-4">
-                  <p className="text-[11px] uppercase tracking-wider text-foreground-subtle mb-2.5">Quick Actions</p>
+                  <p className="text-[11px] uppercase tracking-wider text-foreground-subtle mb-2.5">
+                    Quick Actions
+                  </p>
                   <div className="grid grid-cols-2 gap-1.5">
                     <GhostBtn onClick={handleRefreshResearch} disabled={research.isPending}>
-                      {research.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
+                      {research.isPending ? (
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                      ) : (
+                        <RefreshCw className="h-3 w-3" />
+                      )}
                       Refresh Research
                     </GhostBtn>
                     <GhostBtn onClick={handleDiscoverDecisionMakers} disabled={discover.isPending}>
-                      {discover.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <Users className="h-3 w-3" />}
+                      {discover.isPending ? (
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                      ) : (
+                        <Users className="h-3 w-3" />
+                      )}
                       Discover Decision Makers
                     </GhostBtn>
                     <GhostBtn onClick={handleGenerateOutreach} disabled={email.isPending}>
-                      {email.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <Mail className="h-3 w-3" />}
+                      {email.isPending ? (
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                      ) : (
+                        <Mail className="h-3 w-3" />
+                      )}
                       Generate Outreach
                     </GhostBtn>
                     <GhostBtn onClick={handleCreateCampaign} disabled={insertCampaign.isPending}>
-                      {insertCampaign.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <Megaphone className="h-3 w-3" />}
+                      {insertCampaign.isPending ? (
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                      ) : (
+                        <Megaphone className="h-3 w-3" />
+                      )}
                       Create Campaign
                     </GhostBtn>
                   </div>
@@ -416,9 +553,6 @@ function CompaniesPage() {
                   onOpen={() => navigate({ to: "/leads" })}
                 />
 
-
-
-
                 <dl className="grid grid-cols-2 gap-3 rounded-xl border border-border bg-surface p-4">
                   <MetaRow label="Industry" value={selected.industry} />
                   <MetaRow label="Business Model" value={selected.business_model} />
@@ -427,13 +561,19 @@ function CompaniesPage() {
                   <MetaRow label="Location" value={selected.location} />
                   <MetaRow
                     label="Last Research"
-                    value={selected.last_research_at ? new Date(selected.last_research_at).toLocaleString() : null}
+                    value={
+                      selected.last_research_at
+                        ? new Date(selected.last_research_at).toLocaleString()
+                        : null
+                    }
                   />
                 </dl>
 
                 {(selected.icp_score != null || selected.confidence_score != null) && (
                   <div className="rounded-xl border border-border bg-surface p-4">
-                    <p className="text-[11px] uppercase tracking-wider text-foreground-subtle mb-2">AI Scores</p>
+                    <p className="text-[11px] uppercase tracking-wider text-foreground-subtle mb-2">
+                      AI Scores
+                    </p>
                     <div className="grid grid-cols-2 gap-3">
                       <ScoreBar label="ICP Fit" value={selected.icp_score} />
                       <ScoreBar label="Confidence" value={selected.confidence_score} />
@@ -443,24 +583,39 @@ function CompaniesPage() {
 
                 {selected.ai_summary && (
                   <div className="rounded-xl border border-border bg-surface p-4">
-                    <p className="text-[11px] uppercase tracking-wider text-foreground-subtle mb-1.5">AI Summary</p>
-                    <p className="text-[13px] text-foreground-muted leading-relaxed whitespace-pre-wrap">{selected.ai_summary}</p>
+                    <p className="text-[11px] uppercase tracking-wider text-foreground-subtle mb-1.5">
+                      AI Summary
+                    </p>
+                    <p className="text-[13px] text-foreground-muted leading-relaxed whitespace-pre-wrap">
+                      {selected.ai_summary}
+                    </p>
                   </div>
                 )}
 
                 {selected.recommended_outreach && (
                   <div className="rounded-xl border border-border bg-surface p-4">
-                    <p className="text-[11px] uppercase tracking-wider text-foreground-subtle mb-1.5">Recommended Outreach</p>
-                    <p className="text-[13px] text-foreground-muted leading-relaxed whitespace-pre-wrap">{selected.recommended_outreach}</p>
+                    <p className="text-[11px] uppercase tracking-wider text-foreground-subtle mb-1.5">
+                      Recommended Outreach
+                    </p>
+                    <p className="text-[13px] text-foreground-muted leading-relaxed whitespace-pre-wrap">
+                      {selected.recommended_outreach}
+                    </p>
                   </div>
                 )}
 
                 {selected.products?.length > 0 && (
                   <div className="rounded-xl border border-border bg-surface p-4">
-                    <p className="text-[11px] uppercase tracking-wider text-foreground-subtle mb-2">Products / Services</p>
+                    <p className="text-[11px] uppercase tracking-wider text-foreground-subtle mb-2">
+                      Products / Services
+                    </p>
                     <div className="flex flex-wrap gap-1.5">
                       {selected.products.map((p: string) => (
-                        <span key={p} className="text-[11px] rounded-md bg-surface-muted border border-border px-2 py-0.5 text-foreground-muted">{p}</span>
+                        <span
+                          key={p}
+                          className="text-[11px] rounded-md bg-surface-muted border border-border px-2 py-0.5 text-foreground-muted"
+                        >
+                          {p}
+                        </span>
                       ))}
                     </div>
                   </div>
@@ -468,17 +623,28 @@ function CompaniesPage() {
 
                 {selected.description && (
                   <div className="rounded-xl border border-border bg-surface p-4">
-                    <p className="text-[11px] uppercase tracking-wider text-foreground-subtle mb-1.5">Description</p>
-                    <p className="text-[13px] text-foreground-muted leading-relaxed whitespace-pre-wrap">{selected.description}</p>
+                    <p className="text-[11px] uppercase tracking-wider text-foreground-subtle mb-1.5">
+                      Description
+                    </p>
+                    <p className="text-[13px] text-foreground-muted leading-relaxed whitespace-pre-wrap">
+                      {selected.description}
+                    </p>
                   </div>
                 )}
 
                 {selected.tech_stack?.length > 0 && (
                   <div className="rounded-xl border border-border bg-surface p-4">
-                    <p className="text-[11px] uppercase tracking-wider text-foreground-subtle mb-2">Tech Stack</p>
+                    <p className="text-[11px] uppercase tracking-wider text-foreground-subtle mb-2">
+                      Tech Stack
+                    </p>
                     <div className="flex flex-wrap gap-1.5">
                       {selected.tech_stack.map((t: string) => (
-                        <span key={t} className="text-[11px] rounded-md bg-surface-muted border border-border px-2 py-0.5 text-foreground-muted">{t}</span>
+                        <span
+                          key={t}
+                          className="text-[11px] rounded-md bg-surface-muted border border-border px-2 py-0.5 text-foreground-muted"
+                        >
+                          {t}
+                        </span>
                       ))}
                     </div>
                   </div>
@@ -518,7 +684,11 @@ function CompaniesPage() {
         }}
       />
 
-      <ImportWizardModal open={importOpen} entity="companies" onClose={() => setImportOpen(false)} />
+      <ImportWizardModal
+        open={importOpen}
+        entity="companies"
+        onClose={() => setImportOpen(false)}
+      />
       <DuplicateManagerModal open={dupOpen} kind="companies" onClose={() => setDupOpen(false)} />
     </div>
   );
@@ -548,7 +718,15 @@ function ScoreBar({ label, value }: { label: string; value?: number | null }) {
   );
 }
 
-function DiscoveredLeads({ leads, contacts, onOpen }: { leads: any[]; contacts: any[]; onOpen: (id: string) => void }) {
+function DiscoveredLeads({
+  leads,
+  contacts,
+  onOpen,
+}: {
+  leads: any[];
+  contacts: any[];
+  onOpen: (id: string) => void;
+}) {
   if (!leads?.length) return null;
   const sorted = [...leads].sort((a, b) => {
     const ta = new Date(a.ai_scored_at ?? a.last_activity_at ?? a.created_at ?? 0).getTime();
@@ -559,7 +737,9 @@ function DiscoveredLeads({ leads, contacts, onOpen }: { leads: any[]; contacts: 
   return (
     <div className="rounded-xl border border-border bg-surface p-4">
       <div className="flex items-baseline justify-between mb-2">
-        <p className="text-[11px] uppercase tracking-wider text-foreground-subtle">Discovered Leads</p>
+        <p className="text-[11px] uppercase tracking-wider text-foreground-subtle">
+          Discovered Leads
+        </p>
         <span className="text-[11px] text-foreground-muted">{leads.length} total</span>
       </div>
       <ul className="divide-y divide-border">
@@ -577,7 +757,8 @@ function DiscoveredLeads({ leads, contacts, onOpen }: { leads: any[]; contacts: 
                 <div className="min-w-0">
                   <p className="text-[13px] text-foreground truncate">{name}</p>
                   <p className="text-[11px] text-foreground-subtle truncate">
-                    {[title, insight.department, insight.seniority].filter(Boolean).join(" · ") || "—"}
+                    {[title, insight.department, insight.seniority].filter(Boolean).join(" · ") ||
+                      "—"}
                   </p>
                 </div>
                 {typeof l.score === "number" && (
@@ -639,24 +820,44 @@ function CompanyForm({
         }}
         className="space-y-3"
       >
-        <Field label="Name"><TextInput required value={name} onChange={(e) => setName(e.target.value)} /></Field>
+        <Field label="Name">
+          <TextInput required value={name} onChange={(e) => setName(e.target.value)} />
+        </Field>
         <div className="grid grid-cols-2 gap-3">
-          <Field label="Domain"><TextInput value={domain} onChange={(e) => setDomain(e.target.value)} placeholder="acme.com" /></Field>
-          <Field label="Industry"><TextInput value={industry} onChange={(e) => setIndustry(e.target.value)} /></Field>
+          <Field label="Domain">
+            <TextInput
+              value={domain}
+              onChange={(e) => setDomain(e.target.value)}
+              placeholder="acme.com"
+            />
+          </Field>
+          <Field label="Industry">
+            <TextInput value={industry} onChange={(e) => setIndustry(e.target.value)} />
+          </Field>
         </div>
         <div className="grid grid-cols-2 gap-3">
           <Field label="Size">
             <Select value={size} onChange={(e) => setSize(e.target.value)}>
               <option value="">—</option>
-              {["1-10", "11-50", "51-200", "201-500", "501-1000", "1000+"].map((s) => <option key={s} value={s}>{s}</option>)}
+              {["1-10", "11-50", "51-200", "201-500", "501-1000", "1000+"].map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
             </Select>
           </Field>
-          <Field label="Location"><TextInput value={location} onChange={(e) => setLocation(e.target.value)} /></Field>
+          <Field label="Location">
+            <TextInput value={location} onChange={(e) => setLocation(e.target.value)} />
+          </Field>
         </div>
-        <Field label="Description"><TextArea value={description} onChange={(e) => setDescription(e.target.value)} /></Field>
+        <Field label="Description">
+          <TextArea value={description} onChange={(e) => setDescription(e.target.value)} />
+        </Field>
         <div className="flex justify-end gap-2 pt-2">
           <GhostBtn onClick={onClose}>Cancel</GhostBtn>
-          <PrimaryBtn type="submit" disabled={submitting || !name}>{initial ? "Save" : "Create"}</PrimaryBtn>
+          <PrimaryBtn type="submit" disabled={submitting || !name}>
+            {initial ? "Save" : "Create"}
+          </PrimaryBtn>
         </div>
       </form>
     </Modal>

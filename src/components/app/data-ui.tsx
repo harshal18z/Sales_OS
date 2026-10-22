@@ -30,7 +30,9 @@ export function EmptyState({
 
 export function SkeletonRow({ height = "h-12" }: { height?: string }) {
   return (
-    <div className={`rounded-lg border border-border bg-surface-muted/40 animate-pulse ${height}`} />
+    <div
+      className={`rounded-lg border border-border bg-surface-muted/40 animate-pulse ${height}`}
+    />
   );
 }
 
@@ -122,7 +124,10 @@ export function Modal({
 }) {
   if (!open) return null;
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-foreground/20 backdrop-blur-sm p-4" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-50 grid place-items-center bg-foreground/20 backdrop-blur-sm p-4"
+      onClick={onClose}
+    >
       <div
         className="w-full max-w-lg rounded-xl border border-border bg-surface shadow-2xl"
         onClick={(e) => e.stopPropagation()}

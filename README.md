@@ -23,16 +23,16 @@ The server reads `.env` locally and reads environment variables directly in prod
 
 Required or feature-specific server variables:
 
-| Variable | Used for |
-| --- | --- |
-| `SUPABASE_URL` | Supabase server API |
-| `SUPABASE_PUBLISHABLE_KEY` | User-scoped server queries |
-| `SUPABASE_SERVICE_ROLE_KEY` | Encrypted connector-key storage and Stripe webhook updates |
-| `APP_USER_CONNECTION_KEY_SECRET` | Encrypting per-user connector credentials at rest |
-| `LOVABLE_API_KEY` | Default AI provider; alternatively configure a supported provider key |
-| `GOOGLE_MAIL_APP_USER_CONNECTOR_CLIENT_API_KEY` | Gmail connector OAuth |
-| `GOOGLE_CALENDAR_APP_USER_CONNECTOR_CLIENT_API_KEY` | Calendar connector OAuth |
-| `CRON_SECRET` | Private bearer token for the scheduled-email worker endpoint |
+| Variable                                            | Used for                                                              |
+| --------------------------------------------------- | --------------------------------------------------------------------- |
+| `SUPABASE_URL`                                      | Supabase server API                                                   |
+| `SUPABASE_PUBLISHABLE_KEY`                          | User-scoped server queries                                            |
+| `SUPABASE_SERVICE_ROLE_KEY`                         | Encrypted connector-key storage and Stripe webhook updates            |
+| `APP_USER_CONNECTION_KEY_SECRET`                    | Encrypting per-user connector credentials at rest                     |
+| `LOVABLE_API_KEY`                                   | Default AI provider; alternatively configure a supported provider key |
+| `GOOGLE_MAIL_APP_USER_CONNECTOR_CLIENT_API_KEY`     | Gmail connector OAuth                                                 |
+| `GOOGLE_CALENDAR_APP_USER_CONNECTOR_CLIENT_API_KEY` | Calendar connector OAuth                                              |
+| `CRON_SECRET`                                       | Private bearer token for the scheduled-email worker endpoint          |
 
 Research can use one or more of `FIRECRAWL_API_KEY`, `JINA_API_KEY`, `TAVILY_API_KEY`, or `EXA_API_KEY`. AI can be configured with `AI_PROVIDER` / `AI_MODEL`; supported providers are documented in `src/lib/ai/provider.server.ts`.
 
@@ -48,4 +48,5 @@ Create a strong random `APP_USER_CONNECTION_KEY_SECRET` and keep it stable. Chan
 The Dockerfile builds the production Node app. To deliver scheduled Gmail messages, apply the migrations, configure `CRON_SECRET`, and configure a scheduler to POST to `/api/cron/scheduled-emails` with `Authorization: Bearer <CRON_SECRET>` every minute. Failed jobs are surfaced as failed rather than automatically retried, to avoid duplicate sends when a provider response is ambiguous. Activating a campaign records approval and status but does not send its sequence automatically.
 
 The CRM integrations for HubSpot, Salesforce, and Pipedrive still need provider OAuth applications and two-way sync implementations. Legal copy, retention terms, and operational security details must be reviewed and completed for the actual business before public launch.
+
 # Sales_OS

@@ -57,7 +57,12 @@ type Turn = {
 };
 
 type Catalog = {
-  companies: { id: string; name: string | null; website: string | null; industry?: string | null }[];
+  companies: {
+    id: string;
+    name: string | null;
+    website: string | null;
+    industry?: string | null;
+  }[];
   leads: { id: string; company_id: string | null }[];
   campaigns: { id: string; name: string | null; status: string | null; channel: string | null }[];
 };
@@ -101,7 +106,11 @@ function CopilotPage() {
 
     const userTurn: Turn = { id: crypto.randomUUID(), role: "user", text: message };
     const copilotId = crypto.randomUUID();
-    setTurns((t) => [...t, userTurn, { id: copilotId, role: "copilot", text: "Planning…", steps: [] }]);
+    setTurns((t) => [
+      ...t,
+      userTurn,
+      { id: copilotId, role: "copilot", text: "Planning…", steps: [] },
+    ]);
 
     try {
       const { data: sess } = await supabase.auth.getSession();
@@ -175,9 +184,7 @@ function CopilotPage() {
       }
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
-      setTurns((t) =>
-        t.map((tt) => (tt.id === copilotId ? { ...tt, text: "", error: msg } : tt)),
-      );
+      setTurns((t) => t.map((tt) => (tt.id === copilotId ? { ...tt, text: "", error: msg } : tt)));
     } finally {
       setBusy(false);
       requestAnimationFrame(() => inputRef.current?.focus());
@@ -362,10 +369,7 @@ async function executeStep(step: StepPlan, ctx: Ctx) {
         companyId: resolveCompanyId(ctx, step.args),
         query: (step.args.query as string) || undefined,
       })) as { output?: { company?: { id?: string }; company_id?: string } } | undefined;
-      const cid =
-        out?.output?.company?.id ??
-        out?.output?.company_id ??
-        undefined;
+      const cid = out?.output?.company?.id ?? out?.output?.company_id ?? undefined;
       if (cid) ctx.memory.companyId = cid;
       return;
     }
@@ -429,7 +433,7 @@ async function executeStep(step: StepPlan, ctx: Ctx) {
         leadId:
           (step.args.leadId as string) === "__previous__"
             ? ctx.memory.leadId
-            : ((step.args.leadId as string) || undefined),
+            : (step.args.leadId as string) || undefined,
       });
       return;
     }
@@ -444,9 +448,7 @@ async function executeStep(step: StepPlan, ctx: Ctx) {
       if (!campaignId) {
         const q = ((step.args.campaignQuery as string) || "").toLowerCase().trim();
         if (q) {
-          const hit = ctx.catalog.campaigns.find(
-            (c) => c.name && c.name.toLowerCase().includes(q),
-          );
+          const hit = ctx.catalog.campaigns.find((c) => c.name && c.name.toLowerCase().includes(q));
           if (hit) campaignId = hit.id;
         }
       }
@@ -454,8 +456,7 @@ async function executeStep(step: StepPlan, ctx: Ctx) {
       await ctx.schedule.mutateAsync({
         campaignId,
         scheduledAt: (step.args.scheduledAt as string) || null,
-        status:
-          (step.args.status as "draft" | "scheduled" | "active" | "paused") || "scheduled",
+        status: (step.args.status as "draft" | "scheduled" | "active" | "paused") || "scheduled",
       });
       return;
     }

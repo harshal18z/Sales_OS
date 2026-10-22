@@ -128,11 +128,7 @@ export function QueryClientProvider({
   client: QueryClient;
   children: ReactNode;
 }) {
-  return (
-    <QueryClientContext.Provider value={client}>
-      {children}
-    </QueryClientContext.Provider>
-  );
+  return <QueryClientContext.Provider value={client}>{children}</QueryClientContext.Provider>;
 }
 
 export function useQueryClient(): QueryClient {
@@ -152,7 +148,8 @@ export interface UseQueryOptions<TData = unknown, TError = Error> {
   gcTime?: number;
   retry?: boolean | number;
   refetchOnWindowFocus?: boolean;
-  refetchInterval?: number | false | ((query: { state: { data: TData | undefined } }) => number | false);
+  refetchInterval?:
+    number | false | ((query: { state: { data: TData | undefined } }) => number | false);
   initialData?: TData;
 }
 
@@ -176,9 +173,13 @@ export function useQuery<TData = unknown, TError = Error>(
 
   const initialRecord = client.getQueryState<TData>(queryKey);
   const [data, setData] = useState<TData | undefined>(() => initialRecord?.data ?? initialData);
-  const [error, setError] = useState<TError | null>(() => (initialRecord?.error as TError | null) ?? null);
+  const [error, setError] = useState<TError | null>(
+    () => (initialRecord?.error as TError | null) ?? null,
+  );
   const [isFetching, setIsFetching] = useState<boolean>(false);
-  const [hasFetchedOnce, setHasFetchedOnce] = useState<boolean>(() => !!initialRecord || initialData !== undefined);
+  const [hasFetchedOnce, setHasFetchedOnce] = useState<boolean>(
+    () => !!initialRecord || initialData !== undefined,
+  );
 
   const isMounted = useRef(true);
   const queryFnRef = useRef(queryFn);
@@ -304,39 +305,36 @@ export function useMutation<TData = unknown, TVariables = void, TError = Error>(
   const optionsRef = useRef(options);
   optionsRef.current = options;
 
-  const mutateAsync = useCallback(
-    async (vars?: TVariables): Promise<TData> => {
-      setIsPending(true);
-      setError(null);
-      setIsSuccess(false);
-      setVariables(vars);
-      try {
-        const result = await optionsRef.current.mutationFn(vars as TVariables);
-        setData(result);
-        setIsSuccess(true);
-        if (optionsRef.current.onSuccess) {
-          await optionsRef.current.onSuccess(result, vars as TVariables);
-        }
-        if (optionsRef.current.onSettled) {
-          await optionsRef.current.onSettled(result, null, vars as TVariables);
-        }
-        return result;
-      } catch (err) {
-        const errObj = (err instanceof Error ? err : new Error(String(err))) as TError;
-        setError(errObj);
-        if (optionsRef.current.onError) {
-          await optionsRef.current.onError(errObj, vars as TVariables);
-        }
-        if (optionsRef.current.onSettled) {
-          await optionsRef.current.onSettled(undefined, errObj, vars as TVariables);
-        }
-        throw errObj;
-      } finally {
-        setIsPending(false);
+  const mutateAsync = useCallback(async (vars?: TVariables): Promise<TData> => {
+    setIsPending(true);
+    setError(null);
+    setIsSuccess(false);
+    setVariables(vars);
+    try {
+      const result = await optionsRef.current.mutationFn(vars as TVariables);
+      setData(result);
+      setIsSuccess(true);
+      if (optionsRef.current.onSuccess) {
+        await optionsRef.current.onSuccess(result, vars as TVariables);
       }
-    },
-    [],
-  );
+      if (optionsRef.current.onSettled) {
+        await optionsRef.current.onSettled(result, null, vars as TVariables);
+      }
+      return result;
+    } catch (err) {
+      const errObj = (err instanceof Error ? err : new Error(String(err))) as TError;
+      setError(errObj);
+      if (optionsRef.current.onError) {
+        await optionsRef.current.onError(errObj, vars as TVariables);
+      }
+      if (optionsRef.current.onSettled) {
+        await optionsRef.current.onSettled(undefined, errObj, vars as TVariables);
+      }
+      throw errObj;
+    } finally {
+      setIsPending(false);
+    }
+  }, []);
 
   const mutate = useCallback(
     (vars?: TVariables) => {

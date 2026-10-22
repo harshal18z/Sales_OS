@@ -27,11 +27,7 @@ import {
   CommandList,
   CommandSeparator,
 } from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -84,17 +80,16 @@ export function AppTopNav() {
   const { user } = useAuth();
 
   const displayName =
-    (user?.user_metadata?.full_name as string) ||
-    user?.email?.split("@")[0] ||
-    "User";
+    (user?.user_metadata?.full_name as string) || user?.email?.split("@")[0] || "User";
   const email = user?.email ?? "";
-  const initials = displayName
-    .split(" ")
-    .map((s) => s[0])
-    .filter(Boolean)
-    .slice(0, 2)
-    .join("")
-    .toUpperCase() || "U";
+  const initials =
+    displayName
+      .split(" ")
+      .map((s) => s[0])
+      .filter(Boolean)
+      .slice(0, 2)
+      .join("")
+      .toUpperCase() || "U";
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -117,7 +112,6 @@ export function AppTopNav() {
   }, [dark]);
 
   const unread = notifications.filter((n) => n.unread).length;
-
 
   return (
     <header className="h-14 shrink-0 border-b border-border bg-surface/80 backdrop-blur-sm sticky top-0 z-30">
@@ -150,9 +144,7 @@ export function AppTopNav() {
                   <div className="text-[13.5px] font-medium truncate">{w.name}</div>
                   <div className="text-[11.5px] text-foreground-muted">{w.plan}</div>
                 </div>
-                {workspace.id === w.id && (
-                  <Check className="h-4 w-4 text-foreground" />
-                )}
+                {workspace.id === w.id && <Check className="h-4 w-4 text-foreground" />}
               </button>
             ))}
             <div className="hairline my-1" />
@@ -172,9 +164,7 @@ export function AppTopNav() {
           className="flex items-center gap-2 h-9 flex-1 max-w-md px-3 rounded-md border border-border bg-background hover:border-border-strong transition-colors text-left"
         >
           <Search className="h-4 w-4 text-foreground-muted" />
-          <span className="text-[13.5px] text-foreground-muted flex-1">
-            Search or ask AI…
-          </span>
+          <span className="text-[13.5px] text-foreground-muted flex-1">Search or ask AI…</span>
           <span className="hidden sm:flex items-center gap-1">
             <kbd className="kbd">
               <CommandIcon className="h-3 w-3" />
@@ -185,9 +175,7 @@ export function AppTopNav() {
 
         {/* Ask AI (Command Center) */}
         <button
-          onClick={() =>
-            window.dispatchEvent(new CustomEvent("salesos:ask-ai"))
-          }
+          onClick={() => window.dispatchEvent(new CustomEvent("salesos:ask-ai"))}
           className="h-9 hidden md:inline-flex items-center gap-1.5 px-2.5 rounded-md border border-border bg-background hover:border-border-strong text-[13px]"
           aria-label="Open AI Command Center"
         >
@@ -200,7 +188,6 @@ export function AppTopNav() {
         </button>
 
         <div className="flex-1 md:hidden" />
-
 
         {/* Right cluster */}
         <div className="flex items-center gap-1">
@@ -243,9 +230,7 @@ export function AppTopNav() {
                         )}
                       />
                       <div className="min-w-0">
-                        <div className="text-[13.5px] text-foreground truncate">
-                          {n.title}
-                        </div>
+                        <div className="text-[13.5px] text-foreground truncate">{n.title}</div>
                         <div className="text-caption">{n.meta}</div>
                       </div>
                     </div>
@@ -282,7 +267,6 @@ export function AppTopNav() {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-
         </div>
       </div>
 
@@ -295,16 +279,12 @@ export function AppTopNav() {
             if (e.key === "Enter" && cmdQuery.trim()) {
               const q = cmdQuery.trim();
               // If it doesn't look like a nav match, treat as an AI question.
-              const isNav = navRoutes.some((r) =>
-                r.label.toLowerCase().includes(q.toLowerCase()),
-              );
+              const isNav = navRoutes.some((r) => r.label.toLowerCase().includes(q.toLowerCase()));
               if (!isNav) {
                 e.preventDefault();
                 setCmdOpen(false);
                 setCmdQuery("");
-                window.dispatchEvent(
-                  new CustomEvent("salesos:ask-ai", { detail: { query: q } }),
-                );
+                window.dispatchEvent(new CustomEvent("salesos:ask-ai", { detail: { query: q } }));
               }
             }
           }}
@@ -368,7 +348,6 @@ export function AppTopNav() {
           </CommandGroup>
         </CommandList>
       </CommandDialog>
-
     </header>
   );
 }

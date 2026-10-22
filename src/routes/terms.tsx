@@ -10,5 +10,7 @@ export const Route = createFileRoute("/terms")({
       { property: "og:description", content: "The terms that govern your use of SalesOS AI." },
     ],
   }),
-  component: () => <LegalShell title="Terms of Service" subtitle="Last updated: placeholder date" />,
+  component: () => (
+    <LegalShell title="Terms of Service" subtitle="Last updated: placeholder date" />
+  ),
 });

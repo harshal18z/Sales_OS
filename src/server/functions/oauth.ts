@@ -91,9 +91,8 @@ export const disconnectConnector = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((connectorId: string) => connectorId)
   .handler(async ({ data: connectorId, context }) => {
-    const { getConnectionKeyForUser, deleteConnectionForUser } = await import(
-      "@/server/appUserConnections.server"
-    );
+    const { getConnectionKeyForUser, deleteConnectionForUser } =
+      await import("@/server/appUserConnections.server");
     const key = await getConnectionKeyForUser(context.userId, connectorId);
     if (key) {
       try {

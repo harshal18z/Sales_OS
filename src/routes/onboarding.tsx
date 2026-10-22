@@ -76,8 +76,7 @@ function OnboardingPage() {
     revenue: "1m-5m",
     goal: "pipeline",
   });
-  const set = <K extends keyof Answers>(k: K, v: Answers[K]) =>
-    setA((p) => ({ ...p, [k]: v }));
+  const set = <K extends keyof Answers>(k: K, v: Answers[K]) => setA((p) => ({ ...p, [k]: v }));
 
   const next = () => setStep((s) => Math.min(s + 1, STEPS.length));
   const back = () => setStep((s) => Math.max(s - 1, 1));
@@ -125,7 +124,10 @@ function OnboardingPage() {
       }
     } else {
       const slugBase =
-        a.company.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "workspace";
+        a.company
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/(^-|-$)/g, "") || "workspace";
       const { data: ws, error } = await supabase
         .from("workspaces")
         .insert({
@@ -196,10 +198,7 @@ function OnboardingPage() {
                 />
               </Field>
             </div>
-            <Actions
-              onNext={next}
-              nextDisabled={!canContinueStep1}
-            />
+            <Actions onNext={next} nextDisabled={!canContinueStep1} />
           </div>
         )}
 
@@ -242,12 +241,7 @@ function OnboardingPage() {
                 />
               ))}
             </div>
-            <Actions
-              onBack={back}
-              onNext={complete}
-              nextLabel="Complete Setup"
-              loading={saving}
-            />
+            <Actions onBack={back} onNext={complete} nextLabel="Complete Setup" loading={saving} />
           </div>
         )}
       </div>

@@ -106,9 +106,8 @@ export const runCompanyResearch = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { aiJSON } = await import("@/lib/ai/provider.server");
     const { runLeadDiscoveryPipeline } = await import("@/lib/ai/lead-discovery.server");
-    const {
-      normalizeCompanyUrl, scrapeUrl, webSearch, detectTechStack,
-    } = await import("@/lib/ai/research-providers.server");
+    const { normalizeCompanyUrl, scrapeUrl, webSearch, detectTechStack } =
+      await import("@/lib/ai/research-providers.server");
 
     return runJob(
       context as Ctx,
@@ -126,12 +125,15 @@ export const runCompanyResearch = createServerFn({ method: "POST" })
         if (!looksLikeUrl) {
           await tick(8, `Finding official website for "${data.url}"…`);
           const hits = await webSearch(`${data.url} official website`, 5);
-          const guess = hits.find((h) => {
-            try {
-              const host = new URL(h.url).hostname.replace(/^www\./, "");
-              return !/wikipedia|linkedin|crunchbase|twitter|facebook|youtube|github/i.test(host);
-            } catch { return false; }
-          }) ?? hits[0];
+          const guess =
+            hits.find((h) => {
+              try {
+                const host = new URL(h.url).hostname.replace(/^www\./, "");
+                return !/wikipedia|linkedin|crunchbase|twitter|facebook|youtube|github/i.test(host);
+              } catch {
+                return false;
+              }
+            }) ?? hits[0];
           if (guess) normalized = normalizeCompanyUrl(guess.url);
         }
         const { url: normalizedUrl, domain } = normalized;
@@ -173,7 +175,9 @@ export const runCompanyResearch = createServerFn({ method: "POST" })
                 });
               }
             }
-            return { output: { report_id: cached.id, cached: true, discovery, ...(cached.report ?? {}) } };
+            return {
+              output: { report_id: cached.id, cached: true, discovery, ...(cached.report ?? {}) },
+            };
           }
         }
 
@@ -205,7 +209,10 @@ export const runCompanyResearch = createServerFn({ method: "POST" })
         // Step 6 — funding
         await tick(55, "Searching funding & customers…");
         const funding = await webSearch(`${domain} funding OR "series" OR raised`, 5);
-        const customersHits = await webSearch(`${domain} customers OR "case study" OR case-study`, 5);
+        const customersHits = await webSearch(
+          `${domain} customers OR "case study" OR case-study`,
+          5,
+        );
 
         // Step 7 — technology stack (heuristic + AI polish later)
         await tick(68, "Extracting technology stack…");
@@ -245,7 +252,10 @@ export const runCompanyResearch = createServerFn({ method: "POST" })
         };
 
         const excerpt = (arr: typeof news, cap = 4) =>
-          arr.slice(0, cap).map((h) => `- ${h.title} (${h.url}) — ${h.snippet ?? ""}`).join("\n");
+          arr
+            .slice(0, cap)
+            .map((h) => `- ${h.title} (${h.url}) — ${h.snippet ?? ""}`)
+            .join("\n");
 
         const out = await aiJSON<R>({
           system:
@@ -322,7 +332,10 @@ confidence_score (0-100 int — evidence quality).`,
             report: { ...out, tech_stack: techStack, domain } as never,
             sources: [] as never,
             pain_points: (out.pain_points ?? []) as never,
-            opportunities: (out.sales_opportunities ?? out.outreach_opportunities ?? out.buying_signals ?? []) as never,
+            opportunities: (out.sales_opportunities ??
+              out.outreach_opportunities ??
+              out.buying_signals ??
+              []) as never,
             confidence_score: Math.max(0, Math.min(100, out.confidence_score ?? 0)),
             status: "complete",
             created_by: userId,
@@ -334,13 +347,15 @@ confidence_score (0-100 int — evidence quality).`,
         // Persist citations
         const citations = [
           ...(scraped
-            ? [{
-                title: scraped.title ?? domain,
-                url: scraped.url,
-                provider: scraped.provider,
-                published_date: null as string | null,
-                snippet: null,
-              }]
+            ? [
+                {
+                  title: scraped.title ?? domain,
+                  url: scraped.url,
+                  provider: scraped.provider,
+                  published_date: null as string | null,
+                  snippet: null,
+                },
+              ]
             : []),
           ...[...news, ...hiring, ...funding, ...customersHits].map((h) => ({
             title: h.title,
@@ -370,9 +385,10 @@ confidence_score (0-100 int — evidence quality).`,
         let syncedCompanyId: string | null = data.companyId ?? null;
         try {
           const nowIso = new Date().toISOString();
-          const icp = typeof out.icp_fit_score === "number"
-            ? Math.max(0, Math.min(100, Math.round(out.icp_fit_score)))
-            : null;
+          const icp =
+            typeof out.icp_fit_score === "number"
+              ? Math.max(0, Math.min(100, Math.round(out.icp_fit_score)))
+              : null;
           const conf = Math.max(0, Math.min(100, out.confidence_score ?? 0));
           const companyName = (out.company_name && out.company_name.trim()) || domain;
           const companyFields: Record<string, unknown> = {
@@ -410,10 +426,7 @@ confidence_score (0-100 int — evidence quality).`,
           }
 
           if (syncedCompanyId) {
-            await supabase
-              .from("companies")
-              .update(companyFields)
-              .eq("id", syncedCompanyId);
+            await supabase.from("companies").update(companyFields).eq("id", syncedCompanyId);
           } else {
             const { data: inserted } = await supabase
               .from("companies")
@@ -475,7 +488,6 @@ confidence_score (0-100 int — evidence quality).`,
       },
     );
   });
-
 
 // ---------------- 2. Email Generator (AI Copilot) ----------------
 export const runEmailGenerator = createServerFn({ method: "POST" })
@@ -544,9 +556,11 @@ export const runEmailGenerator = createServerFn({ method: "POST" })
           if (rep) {
             const r = (rep.report ?? {}) as Record<string, unknown>;
             const news = ((r.recent_news as { title: string }[] | undefined) ?? [])
-              .slice(0, 3).map((n) => n.title).join(" | ");
+              .slice(0, 3)
+              .map((n) => n.title)
+              .join(" | ");
             researchCtx = `\nRESEARCH SUMMARY: ${rep.summary ?? ""}
-PAIN POINTS: ${(rep.pain_points as string[] | null ?? []).slice(0, 5).join(" | ")}
+PAIN POINTS: ${((rep.pain_points as string[] | null) ?? []).slice(0, 5).join(" | ")}
 BUYING SIGNALS: ${((r.buying_signals as string[] | undefined) ?? []).slice(0, 5).join(" | ")}
 OUTREACH OPPORTUNITIES: ${((r.outreach_opportunities as string[] | undefined) ?? (rep.opportunities as string[] | null) ?? []).slice(0, 5).join(" | ")}
 RECENT NEWS: ${news}`;
@@ -555,8 +569,7 @@ RECENT NEWS: ${news}`;
         await tick(45, "Personalizing with research…");
 
         const lengthCap =
-          data.length === "short" ? "60 words" :
-          data.length === "long" ? "220 words" : "120 words";
+          data.length === "short" ? "60 words" : data.length === "long" ? "220 words" : "120 words";
 
         const typeLabel: Record<string, string> = {
           cold: "cold outreach opener",
@@ -658,11 +671,32 @@ export const runLeadScoring = createServerFn({ method: "POST" })
         // Gather activity signals in parallel
         await tick(30, "Gathering signals…");
         const [emailsRes, meetingsRes, activityRes, researchRes] = await Promise.all([
-          supabase.from("emails").select("id,status,opened_at,replied_at,clicked_at,sent_at").eq("lead_id", data.leadId).limit(20),
-          supabase.from("meetings").select("id,status,start_time").eq("lead_id", data.leadId).limit(10),
-          supabase.from("activity_logs").select("action,created_at").eq("entity_type", "leads").eq("entity_id", data.leadId).order("created_at", { ascending: false }).limit(20),
+          supabase
+            .from("emails")
+            .select("id,status,opened_at,replied_at,clicked_at,sent_at")
+            .eq("lead_id", data.leadId)
+            .limit(20),
+          supabase
+            .from("meetings")
+            .select("id,status,start_time")
+            .eq("lead_id", data.leadId)
+            .limit(10),
+          supabase
+            .from("activity_logs")
+            .select("action,created_at")
+            .eq("entity_type", "leads")
+            .eq("entity_id", data.leadId)
+            .order("created_at", { ascending: false })
+            .limit(20),
           lead.company_id
-            ? supabase.from("research_reports").select("summary,report,pain_points,opportunities,confidence_score").eq("workspace_id", data.workspaceId).eq("company_id", lead.company_id).order("created_at", { ascending: false }).limit(1).maybeSingle()
+            ? supabase
+                .from("research_reports")
+                .select("summary,report,pain_points,opportunities,confidence_score")
+                .eq("workspace_id", data.workspaceId)
+                .eq("company_id", lead.company_id)
+                .order("created_at", { ascending: false })
+                .limit(1)
+                .maybeSingle()
             : Promise.resolve({ data: null }),
         ]);
         const emails = emailsRes.data ?? [];
@@ -715,7 +749,12 @@ ${JSON.stringify({
 EMAIL ENGAGEMENT: ${JSON.stringify(emailStats)}
 MEETINGS: ${JSON.stringify(meetingStats)}
 LAST ACTIVITY: ${lastActivityAt}
-RECENT ACTIONS: ${activity.slice(0, 8).map((a: any) => a.action).join(", ") || "(none)"}
+RECENT ACTIONS: ${
+            activity
+              .slice(0, 8)
+              .map((a: any) => a.action)
+              .join(", ") || "(none)"
+          }
 
 RESEARCH: ${research?.summary ?? "(no research)"}
 BUYING SIGNALS: ${((r.buying_signals as string[] | undefined) ?? []).slice(0, 6).join(" | ")}
@@ -739,9 +778,13 @@ outreach_strategy (2-3 sentences, concrete).`,
         await tick(88, "Persisting…");
 
         const clamp = (n: number) => Math.max(0, Math.min(100, Math.round(n ?? 0)));
-        const overall = clamp(out.overall_score ?? ((out.fit_score + out.intent_score + out.buying_score) / 3));
-        const temperature = out.temperature ?? (overall >= 75 ? "hot" : overall >= 45 ? "warm" : "cold");
-        const priority = out.priority ?? (overall >= 75 ? "high" : overall >= 45 ? "medium" : "low");
+        const overall = clamp(
+          out.overall_score ?? (out.fit_score + out.intent_score + out.buying_score) / 3,
+        );
+        const temperature =
+          out.temperature ?? (overall >= 75 ? "hot" : overall >= 45 ? "warm" : "cold");
+        const priority =
+          out.priority ?? (overall >= 75 ? "high" : overall >= 45 ? "medium" : "low");
 
         await supabase
           .from("leads")
@@ -762,7 +805,11 @@ outreach_strategy (2-3 sentences, concrete).`,
               intent_score: clamp(out.intent_score),
               buying_score: clamp(out.buying_score),
               win_probability: clamp(out.win_probability),
-              signals: { emails: emailStats, meetings: meetingStats, last_activity_at: lastActivityAt },
+              signals: {
+                emails: emailStats,
+                meetings: meetingStats,
+                last_activity_at: lastActivityAt,
+              },
             },
             ai_scored_at: new Date().toISOString(),
             last_activity_at: lastActivityAt,
@@ -778,11 +825,13 @@ outreach_strategy (2-3 sentences, concrete).`,
 export const runMeetingPrep = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((v: unknown) =>
-    z.object({
-      workspaceId: z.string().uuid(),
-      meetingId: z.string().uuid(),
-      force: z.boolean().optional(),
-    }).parse(v),
+    z
+      .object({
+        workspaceId: z.string().uuid(),
+        meetingId: z.string().uuid(),
+        force: z.boolean().optional(),
+      })
+      .parse(v),
   )
   .handler(async ({ data, context }) => {
     const { aiJSON } = await import("@/lib/ai/provider.server");
@@ -828,7 +877,10 @@ export const runMeetingPrep = createServerFn({ method: "POST" })
         let lead: any = meeting.leads ?? null;
         if (!lead && meeting.lead_id) {
           const { data: l } = await supabase
-            .from("leads").select("*").eq("id", meeting.lead_id).maybeSingle();
+            .from("leads")
+            .select("*")
+            .eq("id", meeting.lead_id)
+            .maybeSingle();
           lead = l;
         }
 
@@ -856,8 +908,9 @@ export const runMeetingPrep = createServerFn({ method: "POST" })
         const durMin = Math.max(
           15,
           Math.round(
-            ((new Date(meeting.ends_at ?? meeting.starts_at).getTime()) -
-              new Date(meeting.starts_at).getTime()) / 60000,
+            (new Date(meeting.ends_at ?? meeting.starts_at).getTime() -
+              new Date(meeting.starts_at).getTime()) /
+              60000,
           ) || 30,
         );
 
@@ -880,27 +933,35 @@ Name: ${contact.first_name ?? ""} ${contact.last_name ?? ""}
 Title: ${contact.title ?? ""}
 
 LEAD INTELLIGENCE
-${lead ? JSON.stringify({
-  score: lead.score,
-  temperature: lead.temperature,
-  priority: lead.priority,
-  buying_intent: lead.buying_intent,
-  win_probability: lead.win_probability,
-  next_action: lead.next_action,
-  ai_insight: lead.ai_insight,
-}) : "(none)"}
+${
+  lead
+    ? JSON.stringify({
+        score: lead.score,
+        temperature: lead.temperature,
+        priority: lead.priority,
+        buying_intent: lead.buying_intent,
+        win_probability: lead.win_probability,
+        next_action: lead.next_action,
+        ai_insight: lead.ai_insight,
+      })
+    : "(none)"
+}
 
 COMPANY RESEARCH REPORT
-${research ? JSON.stringify({
-  summary: research.summary,
-  products: research.products,
-  pain_points: research.pain_points,
-  buying_signals: research.buying_signals,
-  recent_news: research.recent_news,
-  outreach_opportunities: research.outreach_opportunities,
-  competitors: research.competitors,
-  tech_stack: research.tech_stack,
-}) : "(no research report on file)"}
+${
+  research
+    ? JSON.stringify({
+        summary: research.summary,
+        products: research.products,
+        pain_points: research.pain_points,
+        buying_signals: research.buying_signals,
+        recent_news: research.recent_news,
+        outreach_opportunities: research.outreach_opportunities,
+        competitors: research.competitors,
+        tech_stack: research.tech_stack,
+      })
+    : "(no research report on file)"
+}
 
 Return JSON with keys:
 brief (2-3 sentence strategic framing),
@@ -934,12 +995,14 @@ success_criteria (string[] — how we know this meeting succeeded).`,
 export const runMeetingRecap = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((v: unknown) =>
-    z.object({
-      workspaceId: z.string().uuid(),
-      meetingId: z.string().uuid(),
-      transcript: z.string().optional(),
-      force: z.boolean().optional(),
-    }).parse(v),
+    z
+      .object({
+        workspaceId: z.string().uuid(),
+        meetingId: z.string().uuid(),
+        transcript: z.string().optional(),
+        force: z.boolean().optional(),
+      })
+      .parse(v),
   )
   .handler(async ({ data, context }) => {
     const { aiJSON } = await import("@/lib/ai/provider.server");
@@ -973,7 +1036,11 @@ export const runMeetingRecap = createServerFn({ method: "POST" })
           summary: string;
           key_decisions: string[];
           action_items: { text: string; owner?: string; due?: string }[];
-          follow_up_tasks: { title: string; description?: string; priority?: "low" | "medium" | "high" }[];
+          follow_up_tasks: {
+            title: string;
+            description?: string;
+            priority?: "low" | "medium" | "high";
+          }[];
           follow_up_email: { subject: string; body: string };
           sentiment: "positive" | "neutral" | "negative";
           next_meeting_suggestion?: string;
@@ -1036,7 +1103,7 @@ next_meeting_suggestion (short string or omit).`,
           .update({
             ai_summary: out as never,
             ai_summary_at: new Date().toISOString(),
-            action_items: ([...existingItems, ...newItems]) as never,
+            action_items: [...existingItems, ...newItems] as never,
             status: meeting.status === "scheduled" ? "completed" : meeting.status,
           })
           .eq("id", data.meetingId);
@@ -1096,7 +1163,9 @@ export const runNextAction = createServerFn({ method: "POST" })
 
         await supabase
           .from("crm_deals")
-          .update({ probability: Math.max(0, Math.min(100, out.probability ?? deal.probability ?? 0)) })
+          .update({
+            probability: Math.max(0, Math.min(100, out.probability ?? deal.probability ?? 0)),
+          })
           .eq("id", data.dealId);
 
         return { output: out };
@@ -1143,7 +1212,9 @@ export const runCampaignGenerator = createServerFn({ method: "POST" })
         // 24h cache
         const { data: existing } = await supabase
           .from("campaigns")
-          .select("id, name, goal, description, channel, settings, ai_sequence, ai_sequence_at, workspace_id")
+          .select(
+            "id, name, goal, description, channel, settings, ai_sequence, ai_sequence_at, workspace_id",
+          )
           .eq("id", data.campaignId)
           .maybeSingle();
         if (!existing) throw new Error("Campaign not found");
@@ -1175,7 +1246,7 @@ export const runCampaignGenerator = createServerFn({ method: "POST" })
           if (rep) {
             const r = (rep.report ?? {}) as Record<string, unknown>;
             researchCtx = `\nRESEARCH SUMMARY: ${rep.summary ?? ""}
-PAIN POINTS: ${(rep.pain_points as string[] | null ?? []).slice(0, 5).join(" | ")}
+PAIN POINTS: ${((rep.pain_points as string[] | null) ?? []).slice(0, 5).join(" | ")}
 BUYING SIGNALS: ${((r.buying_signals as string[] | undefined) ?? []).slice(0, 5).join(" | ")}
 OUTREACH OPPORTUNITIES: ${((r.outreach_opportunities as string[] | undefined) ?? (rep.opportunities as string[] | null) ?? []).slice(0, 5).join(" | ")}`;
           }
@@ -1183,7 +1254,9 @@ OUTREACH OPPORTUNITIES: ${((r.outreach_opportunities as string[] | undefined) ??
         if (data.leadId) {
           const { data: lead } = await supabase
             .from("leads")
-            .select("stage, score, temperature, buying_intent, priority, ai_insight, contacts(full_name,title), companies(name,industry)")
+            .select(
+              "stage, score, temperature, buying_intent, priority, ai_insight, contacts(full_name,title), companies(name,industry)",
+            )
             .eq("id", data.leadId)
             .maybeSingle();
           if (lead) {
@@ -1260,7 +1333,7 @@ steps (array of ${touches}): { step, day_offset, channel ("email"|"linkedin"), t
             ai_sequence_at: now,
             channel: channel === "multi" ? "multi" : channel,
             settings: {
-              ...(existing.settings as Record<string, unknown> ?? {}),
+              ...((existing.settings as Record<string, unknown>) ?? {}),
               touches,
               tone: data.tone ?? "direct",
               ab,
@@ -1300,8 +1373,14 @@ export const scheduleCampaign = createServerFn({ method: "POST" })
         .eq("workspace_id", data.workspaceId)
         .eq("user_id", userId);
       if (roleError) throw roleError;
-      if (!(roles ?? []).some((row: { role: string }) => ["owner", "admin", "sales_manager"].includes(row.role))) {
-        throw new Error("A workspace owner, admin, or sales manager must approve campaign activation.");
+      if (
+        !(roles ?? []).some((row: { role: string }) =>
+          ["owner", "admin", "sales_manager"].includes(row.role),
+        )
+      ) {
+        throw new Error(
+          "A workspace owner, admin, or sales manager must approve campaign activation.",
+        );
       }
       const { data: campaign, error: campaignError } = await supabase
         .from("campaigns")
@@ -1311,7 +1390,8 @@ export const scheduleCampaign = createServerFn({ method: "POST" })
         .maybeSingle();
       if (campaignError) throw campaignError;
       const steps = (campaign?.ai_sequence as { steps?: unknown[] } | null)?.steps;
-      if (!steps?.length) throw new Error("Generate and review a sequence before activating this campaign.");
+      if (!steps?.length)
+        throw new Error("Generate and review a sequence before activating this campaign.");
       patch.status = "active";
       patch.approval_status = "approved";
       patch.approved_by = userId;
@@ -1390,18 +1470,29 @@ export const runRevenueIntelligence = createServerFn({ method: "POST" })
           supabase.from("crm_deals").select("*").eq("workspace_id", data.workspaceId),
           supabase.from("leads").select("*").eq("workspace_id", data.workspaceId),
           supabase.from("campaigns").select("*").eq("workspace_id", data.workspaceId),
-          supabase.from("emails").select("id,status,created_at").eq("workspace_id", data.workspaceId),
-          supabase.from("meetings").select("id,status,starts_at,created_at").eq("workspace_id", data.workspaceId),
-          supabase.from("research_reports").select("id,company_id,summary,created_at").eq("workspace_id", data.workspaceId).order("created_at", { ascending: false }).limit(20),
+          supabase
+            .from("emails")
+            .select("id,status,created_at")
+            .eq("workspace_id", data.workspaceId),
+          supabase
+            .from("meetings")
+            .select("id,status,starts_at,created_at")
+            .eq("workspace_id", data.workspaceId),
+          supabase
+            .from("research_reports")
+            .select("id,company_id,summary,created_at")
+            .eq("workspace_id", data.workspaceId)
+            .order("created_at", { ascending: false })
+            .limit(20),
         ]);
 
         await tick(35, "Computing metrics…");
 
-        const ds = (deals as any[]);
-        const ls = (leads as any[]);
-        const cs = (campaigns as any[]);
-        const em = (emails as any[]);
-        const ms = (meetings as any[]);
+        const ds = deals as any[];
+        const ls = leads as any[];
+        const cs = campaigns as any[];
+        const em = emails as any[];
+        const ms = meetings as any[];
 
         const now = Date.now();
         const DAY = 86400000;
@@ -1447,24 +1538,50 @@ export const runRevenueIntelligence = createServerFn({ method: "POST" })
           engaged: ls.filter((l) => l.stage === "engaged").length,
           qualified: ls.filter((l) => l.stage === "qualified").length,
           hot: ls.filter((l) => l.temperature === "hot").length,
-          avgScore: ls.length > 0 ? Math.round(ls.reduce((s, l) => s + Number(l.score ?? 0), 0) / ls.length) : 0,
+          avgScore:
+            ls.length > 0
+              ? Math.round(ls.reduce((s, l) => s + Number(l.score ?? 0), 0) / ls.length)
+              : 0,
         };
 
         // Deal risks.
         const risks = open
           .map((d) => {
-            const stale = d.updated_at ? Math.floor((now - new Date(d.updated_at).getTime()) / DAY) : 999;
+            const stale = d.updated_at
+              ? Math.floor((now - new Date(d.updated_at).getTime()) / DAY)
+              : 999;
             const closeSoon = d.expected_close_date
               ? Math.floor((new Date(d.expected_close_date).getTime() - now) / DAY)
               : null;
             let score = 0;
             const reasons: string[] = [];
-            if (stale > 14) { score += 30; reasons.push(`${stale}d no update`); }
-            if (stale > 30) { score += 20; }
-            if (Number(d.probability ?? 0) < 30 && Number(d.value ?? 0) > 0) { score += 20; reasons.push("low probability"); }
-            if (closeSoon !== null && closeSoon < 14 && Number(d.probability ?? 0) < 60) { score += 25; reasons.push("close date imminent"); }
-            if (["proposal", "negotiation"].includes(d.stage) && stale > 10) { score += 10; reasons.push("late-stage stalled"); }
-            return { id: d.id, name: d.name, value: Number(d.value ?? 0), stage: d.stage, risk: Math.min(100, score), reasons };
+            if (stale > 14) {
+              score += 30;
+              reasons.push(`${stale}d no update`);
+            }
+            if (stale > 30) {
+              score += 20;
+            }
+            if (Number(d.probability ?? 0) < 30 && Number(d.value ?? 0) > 0) {
+              score += 20;
+              reasons.push("low probability");
+            }
+            if (closeSoon !== null && closeSoon < 14 && Number(d.probability ?? 0) < 60) {
+              score += 25;
+              reasons.push("close date imminent");
+            }
+            if (["proposal", "negotiation"].includes(d.stage) && stale > 10) {
+              score += 10;
+              reasons.push("late-stage stalled");
+            }
+            return {
+              id: d.id,
+              name: d.name,
+              value: Number(d.value ?? 0),
+              stage: d.stage,
+              risk: Math.min(100, score),
+              reasons,
+            };
           })
           .filter((r) => r.risk >= 40)
           .sort((a, b) => b.risk - a.risk)
@@ -1483,9 +1600,9 @@ export const runRevenueIntelligence = createServerFn({ method: "POST" })
             100,
             Math.round(
               40 * Math.min(1, winRate / 40) +
-              30 * (1 - stalledRatio) +
-              20 * Math.min(1, open.length / 12) +
-              10 * (1 - Math.min(1, highRiskCount / 6)),
+                30 * (1 - stalledRatio) +
+                20 * Math.min(1, open.length / 12) +
+                10 * (1 - Math.min(1, highRiskCount / 6)),
             ),
           ),
         );
@@ -1531,28 +1648,64 @@ export const runRevenueIntelligence = createServerFn({ method: "POST" })
 
         // Campaign activity.
         const campaignsActive = cs.filter((c) => c.status === "active").length;
-        const emailsSent30 = em.filter((e) => e.status === "sent" && inWindow(e.created_at, 30)).length;
+        const emailsSent30 = em.filter(
+          (e) => e.status === "sent" && inWindow(e.created_at, 30),
+        ).length;
         const meetings30 = ms.filter((m) => inWindow(m.starts_at ?? m.created_at, 30)).length;
 
         await tick(60, "Generating AI insights…");
 
         const metricsPayload = {
-          revenue: { won_value: wonValue, lost_value: lostValue, avg_deal_size: avgDealSize, win_rate: winRate, velocity_per_day: velocity, trend, trend_delta_pct: trendDeltaPct },
-          pipeline: { open_count: open.length, open_value: pipelineValue, weighted_value: Math.round(weightedPipeline), health_score: healthScore, stalled_count: stalledCount, high_risk_count: highRiskCount },
+          revenue: {
+            won_value: wonValue,
+            lost_value: lostValue,
+            avg_deal_size: avgDealSize,
+            win_rate: winRate,
+            velocity_per_day: velocity,
+            trend,
+            trend_delta_pct: trendDeltaPct,
+          },
+          pipeline: {
+            open_count: open.length,
+            open_value: pipelineValue,
+            weighted_value: Math.round(weightedPipeline),
+            health_score: healthScore,
+            stalled_count: stalledCount,
+            high_risk_count: highRiskCount,
+          },
           funnel_deals: funnelDeals,
           funnel_conversion: funnelConversion,
           lead_funnel: leadFunnel,
           forecast,
-          activity: { campaigns_active: campaignsActive, emails_sent_30d: emailsSent30, meetings_30d: meetings30, research_reports: reports.length },
+          activity: {
+            campaigns_active: campaignsActive,
+            emails_sent_30d: emailsSent30,
+            meetings_30d: meetings30,
+            research_reports: reports.length,
+          },
           top_risks: risks,
         };
 
         type R = {
           executive_summary: string;
           headline_metric: { label: string; value: string; delta: string };
-          insights: { title: string; detail: string; sentiment: "positive" | "negative" | "neutral"; metric?: string }[];
-          recommendations: { title: string; detail: string; impact: "high" | "medium" | "low"; area: string }[];
-          win_rate_prediction: { next_30d_pct: number; confidence: "low" | "medium" | "high"; drivers: string[] };
+          insights: {
+            title: string;
+            detail: string;
+            sentiment: "positive" | "negative" | "neutral";
+            metric?: string;
+          }[];
+          recommendations: {
+            title: string;
+            detail: string;
+            impact: "high" | "medium" | "low";
+            area: string;
+          }[];
+          win_rate_prediction: {
+            next_30d_pct: number;
+            confidence: "low" | "medium" | "high";
+            drivers: string[];
+          };
           forecast_narrative: string;
           risk_narrative: string;
         };

@@ -31,10 +31,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-screen w-full flex bg-background text-foreground">
-      <AppSidebar
-        collapsed={collapsed}
-        onToggle={() => setCollapsed((c) => !c)}
-      />
+      <AppSidebar collapsed={collapsed} onToggle={() => setCollapsed((c) => !c)} />
       <div className="flex-1 min-w-0 flex flex-col">
         <AppTopNav />
         <main className="flex-1 min-w-0">{children}</main>

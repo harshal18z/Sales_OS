@@ -23,17 +23,14 @@ const workspaces = [
 function WorkspacePage() {
   const [selected, setSelected] = useState<string>("acme");
   const [query, setQuery] = useState("");
-  const filtered = workspaces.filter((w) =>
-    w.name.toLowerCase().includes(query.toLowerCase()),
-  );
+  const filtered = workspaces.filter((w) => w.name.toLowerCase().includes(query.toLowerCase()));
 
   return (
     <AuthShell>
       <div>
         <h1 className="text-heading">Choose a workspace</h1>
         <p className="text-body text-foreground-muted mt-2">
-          You're signed in as{" "}
-          <span className="text-foreground font-medium">alex@acme.com</span>.
+          You're signed in as <span className="text-foreground font-medium">alex@acme.com</span>.
         </p>
 
         <div className="mt-8 flex items-center gap-2 h-10 px-3 rounded-[10px] border border-border bg-surface focus-within:border-foreground/40 focus-within:ring-2 focus-within:ring-foreground/5 transition-all">
@@ -81,9 +78,7 @@ function WorkspacePage() {
                   </div>
                   <div
                     className={`h-4 w-4 rounded-full grid place-items-center transition-all ${
-                      active
-                        ? "bg-foreground text-background"
-                        : "border border-border"
+                      active ? "bg-foreground text-background" : "border border-border"
                     }`}
                   >
                     {active && <Check className="h-2.5 w-2.5" strokeWidth={3} />}

@@ -5,14 +5,12 @@ import { supabase } from "@/integrations/supabase/client";
 
 type OAuthAuthNS = {
   getAuthorizationDetails: (id: string) => Promise<{
-    data:
-      | {
-          client?: { name?: string; client_uri?: string; redirect_uris?: string[] } | null;
-          scope?: string | null;
-          redirect_url?: string | null;
-          redirect_to?: string | null;
-        }
-      | null;
+    data: {
+      client?: { name?: string; client_uri?: string; redirect_uris?: string[] } | null;
+      scope?: string | null;
+      redirect_url?: string | null;
+      redirect_to?: string | null;
+    } | null;
     error: { message: string } | null;
   }>;
   approveAuthorization: (id: string) => Promise<{
@@ -101,12 +99,10 @@ function Consent() {
           <ShieldCheck className="h-3.5 w-3.5 text-[var(--accent)]" />
           Authorize access
         </div>
-        <h1 className="text-section mt-2">
-          Connect {clientName} to SalesOS AI
-        </h1>
+        <h1 className="text-section mt-2">Connect {clientName} to SalesOS AI</h1>
         <p className="text-body text-foreground-muted mt-2">
-          This lets {clientName} use SalesOS AI as you. It does not bypass SalesOS AI's
-          permissions or backend policies.
+          This lets {clientName} use SalesOS AI as you. It does not bypass SalesOS AI's permissions
+          or backend policies.
         </p>
 
         <div className="mt-6 rounded-lg border border-border bg-surface-muted px-4 py-3">

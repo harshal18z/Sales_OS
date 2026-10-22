@@ -41,7 +41,10 @@ function makeSupabase(token: string) {
   });
 }
 
-async function callLLM(message: string, catalog: unknown): Promise<{ reply?: string; steps?: Step[] }> {
+async function callLLM(
+  message: string,
+  catalog: unknown,
+): Promise<{ reply?: string; steps?: Step[] }> {
   const { aiJSON } = await import("@/lib/ai/provider.server");
 
   const system = `You are the SalesOS AI Sales Copilot planner. Turn the user's natural-language request into a short JSON plan that orchestrates existing SalesOS modules. NEVER invent business logic — only pick from the allowed tools.

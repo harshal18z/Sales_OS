@@ -4,12 +4,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { useQueryClient } from "@/lib/query";
-import {
-  GhostBtn,
-  Modal,
-  PrimaryBtn,
-  Select,
-} from "@/components/app/data-ui";
+import { GhostBtn, Modal, PrimaryBtn, Select } from "@/components/app/data-ui";
 
 type EntityKey = "companies" | "contacts" | "leads" | "crm_deals";
 
@@ -32,7 +27,12 @@ const SPECS: Record<EntityKey, EntitySpec> = {
     table: "companies",
     queryKey: "companies",
     fields: [
-      { key: "name", label: "Name", required: true, aliases: ["name", "company", "company name", "account"] },
+      {
+        key: "name",
+        label: "Name",
+        required: true,
+        aliases: ["name", "company", "company name", "account"],
+      },
       { key: "domain", label: "Domain", aliases: ["domain", "website", "url"] },
       { key: "industry", label: "Industry", aliases: ["industry", "sector"] },
       { key: "size", label: "Size", aliases: ["size", "employees", "headcount"] },
@@ -46,7 +46,12 @@ const SPECS: Record<EntityKey, EntitySpec> = {
     table: "contacts",
     queryKey: "contacts",
     fields: [
-      { key: "full_name", label: "Full name", required: true, aliases: ["full name", "name", "contact", "contact name"] },
+      {
+        key: "full_name",
+        label: "Full name",
+        required: true,
+        aliases: ["full name", "name", "contact", "contact name"],
+      },
       { key: "email", label: "Email", aliases: ["email", "email address"] },
       { key: "phone", label: "Phone", aliases: ["phone", "mobile", "phone number"] },
       { key: "title", label: "Title", aliases: ["title", "job title", "role", "position"] },
@@ -70,12 +75,21 @@ const SPECS: Record<EntityKey, EntitySpec> = {
     table: "crm_deals",
     queryKey: "crm_deals",
     fields: [
-      { key: "name", label: "Name", required: true, aliases: ["name", "deal", "deal name", "opportunity"] },
+      {
+        key: "name",
+        label: "Name",
+        required: true,
+        aliases: ["name", "deal", "deal name", "opportunity"],
+      },
       { key: "stage", label: "Stage", aliases: ["stage", "status"] },
       { key: "value", label: "Value", aliases: ["value", "amount", "deal value"] },
       { key: "currency", label: "Currency", aliases: ["currency"] },
       { key: "probability", label: "Probability", aliases: ["probability", "confidence"] },
-      { key: "expected_close_date", label: "Close date", aliases: ["close date", "expected close date", "expected close"] },
+      {
+        key: "expected_close_date",
+        label: "Close date",
+        aliases: ["close date", "expected close date", "expected close"],
+      },
       { key: "notes", label: "Notes", aliases: ["notes", "description"] },
     ],
   },
@@ -267,7 +281,9 @@ export function CSVImportModal({
             <div className="h-10 w-10 rounded-lg bg-surface border border-border grid place-items-center">
               <Upload className="h-4 w-4 text-foreground-muted" />
             </div>
-            <p className="text-[13px] font-medium text-foreground">Drop a CSV file or click to browse</p>
+            <p className="text-[13px] font-medium text-foreground">
+              Drop a CSV file or click to browse
+            </p>
             <p className="text-[11.5px] text-foreground-subtle">First row must be column headers</p>
             <input
               ref={inputRef}
@@ -299,7 +315,9 @@ export function CSVImportModal({
             </div>
 
             <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
-              <p className="text-[11px] uppercase tracking-wider text-foreground-subtle">Field mapping</p>
+              <p className="text-[11px] uppercase tracking-wider text-foreground-subtle">
+                Field mapping
+              </p>
               {spec.fields.map((f) => (
                 <div key={f.key} className="flex items-center gap-2">
                   <label className="text-[12.5px] text-foreground w-40 shrink-0">
@@ -334,9 +352,13 @@ export function CSVImportModal({
                   <AlertCircle className="h-4 w-4 text-foreground-muted mt-0.5" />
                 )}
                 <div className="text-[12.5px] text-foreground-muted">
-                  Imported <span className="font-medium text-foreground">{result.inserted}</span> rows
+                  Imported <span className="font-medium text-foreground">{result.inserted}</span>{" "}
+                  rows
                   {result.failed > 0 && (
-                    <> · Skipped <span className="font-medium text-foreground">{result.failed}</span></>
+                    <>
+                      {" "}
+                      · Skipped <span className="font-medium text-foreground">{result.failed}</span>
+                    </>
                   )}
                 </div>
               </div>

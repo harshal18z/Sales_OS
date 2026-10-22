@@ -6,8 +6,16 @@ import { useAIJobs, useDeleteRow, useInsertRow, useMeetings, useUpdateRow } from
 import { useCalendarEvents, useGoogleStatus, useCalendarCancel } from "@/hooks/use-google";
 import { useAIMeetingPrep, useAIMeetingRecap } from "@/hooks/use-ai";
 import {
-  EmptyState, Field, GhostBtn, Modal, PageHeader, PrimaryBtn, Select,
-  SkeletonList, TextArea, TextInput,
+  EmptyState,
+  Field,
+  GhostBtn,
+  Modal,
+  PageHeader,
+  PrimaryBtn,
+  Select,
+  SkeletonList,
+  TextArea,
+  TextInput,
 } from "@/components/app/data-ui";
 
 export const Route = createFileRoute("/_shell/meetings")({
@@ -18,7 +26,12 @@ export const Route = createFileRoute("/_shell/meetings")({
 const STATUSES = ["scheduled", "in_progress", "completed", "cancelled"] as const;
 
 function fmtDate(iso: string) {
-  return new Date(iso).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+  return new Date(iso).toLocaleString([], {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
 }
 
 function MeetingsPage() {
@@ -43,7 +56,8 @@ function MeetingsPage() {
   const upcoming = (meetings as any[]).filter((m) => new Date(m.starts_at) >= now);
   const past = (meetings as any[]).filter((m) => new Date(m.starts_at) < now);
 
-  const selected = (meetings as any[]).find((m) => m.id === selectedId) ?? upcoming[0] ?? past[0] ?? null;
+  const selected =
+    (meetings as any[]).find((m) => m.id === selectedId) ?? upcoming[0] ?? past[0] ?? null;
 
   useMemo(() => {
     setNotes(selected?.notes ?? "");
@@ -54,7 +68,9 @@ function MeetingsPage() {
     try {
       await update.mutateAsync({ id: selected.id, values: { notes } });
       toast.success("Notes saved");
-    } catch (e) { toast.error((e as Error).message); }
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
   }
 
   async function toggleActionItem(idx: number) {
@@ -63,7 +79,9 @@ function MeetingsPage() {
     items[idx] = { ...items[idx], done: !items[idx].done };
     try {
       await update.mutateAsync({ id: selected.id, values: { action_items: items as never } });
-    } catch (e) { toast.error((e as Error).message); }
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
   }
 
   async function setStatus(status: string) {
@@ -71,7 +89,9 @@ function MeetingsPage() {
     try {
       await update.mutateAsync({ id: selected.id, values: { status } });
       toast.success(status);
-    } catch (e) { toast.error((e as Error).message); }
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
   }
 
   async function handleDelete(id: string) {
@@ -80,7 +100,9 @@ function MeetingsPage() {
       await del.mutateAsync(id);
       setSelectedId(null);
       toast.success("Deleted");
-    } catch (e) { toast.error((e as Error).message); }
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
   }
 
   return (
@@ -115,15 +137,22 @@ function MeetingsPage() {
               <>
                 {gstatus?.calendar && (
                   <div className="mb-5">
-                    <p className="text-[11px] uppercase tracking-wider text-foreground-subtle px-1 mb-2">Google Calendar · next 7d</p>
+                    <p className="text-[11px] uppercase tracking-wider text-foreground-subtle px-1 mb-2">
+                      Google Calendar · next 7d
+                    </p>
                     {gcal.isLoading ? (
                       <SkeletonList count={3} />
                     ) : ((gcal.data as any)?.events ?? []).length === 0 ? (
-                      <p className="text-[12px] text-foreground-subtle px-1">No upcoming Google events.</p>
+                      <p className="text-[12px] text-foreground-subtle px-1">
+                        No upcoming Google events.
+                      </p>
                     ) : (
                       <div className="space-y-1.5">
                         {((gcal.data as any).events as any[]).slice(0, 10).map((e) => (
-                          <div key={e.id} className="rounded-lg border border-border bg-surface p-3">
+                          <div
+                            key={e.id}
+                            className="rounded-lg border border-border bg-surface p-3"
+                          >
                             <div className="flex items-center gap-2">
                               <p className="text-[13px] font-medium text-foreground truncate flex-1">
                                 {e.summary || "(no title)"}
@@ -134,7 +163,9 @@ function MeetingsPage() {
                                   try {
                                     await cancelEvent.mutateAsync({ eventId: e.id });
                                     toast.success("Cancelled");
-                                  } catch (err) { toast.error((err as Error).message); }
+                                  } catch (err) {
+                                    toast.error((err as Error).message);
+                                  }
                                 }}
                                 className="text-[11px] text-foreground-subtle hover:text-foreground"
                               >
@@ -151,10 +182,17 @@ function MeetingsPage() {
                     )}
                   </div>
                 )}
-                <p className="text-[11px] uppercase tracking-wider text-foreground-subtle px-1 mb-2">Upcoming</p>
+                <p className="text-[11px] uppercase tracking-wider text-foreground-subtle px-1 mb-2">
+                  Upcoming
+                </p>
                 <div className="space-y-1.5">
                   {upcoming.map((m: any) => (
-                    <MeetingItem key={m.id} m={m} active={selected?.id === m.id} onClick={() => setSelectedId(m.id)} />
+                    <MeetingItem
+                      key={m.id}
+                      m={m}
+                      active={selected?.id === m.id}
+                      onClick={() => setSelectedId(m.id)}
+                    />
                   ))}
                   {upcoming.length === 0 && (
                     <p className="text-[12px] text-foreground-subtle px-1">Nothing upcoming.</p>
@@ -162,10 +200,17 @@ function MeetingsPage() {
                 </div>
                 {past.length > 0 && (
                   <>
-                    <p className="text-[11px] uppercase tracking-wider text-foreground-subtle px-1 mt-5 mb-2">Past</p>
+                    <p className="text-[11px] uppercase tracking-wider text-foreground-subtle px-1 mt-5 mb-2">
+                      Past
+                    </p>
                     <div className="space-y-1.5">
                       {past.slice(0, 20).map((m: any) => (
-                        <MeetingItem key={m.id} m={m} active={selected?.id === m.id} onClick={() => setSelectedId(m.id)} />
+                        <MeetingItem
+                          key={m.id}
+                          m={m}
+                          active={selected?.id === m.id}
+                          onClick={() => setSelectedId(m.id)}
+                        />
                       ))}
                     </div>
                   </>
@@ -183,15 +228,24 @@ function MeetingsPage() {
               <div className="space-y-4 max-w-3xl">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <h2 className="text-[18px] font-semibold text-foreground truncate">{selected.title}</h2>
+                    <h2 className="text-[18px] font-semibold text-foreground truncate">
+                      {selected.title}
+                    </h2>
                     <p className="text-[12px] text-foreground-muted mt-0.5">
                       {fmtDate(selected.starts_at)}
                       {selected.location ? ` · ${selected.location}` : ""}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Select value={selected.status ?? "scheduled"} onChange={(e) => setStatus(e.target.value)}>
-                      {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
+                    <Select
+                      value={selected.status ?? "scheduled"}
+                      onChange={(e) => setStatus(e.target.value)}
+                    >
+                      {STATUSES.map((s) => (
+                        <option key={s} value={s}>
+                          {s}
+                        </option>
+                      ))}
                     </Select>
                     <GhostBtn onClick={() => handleDelete(selected.id)}>
                       <Trash2 className="h-3.5 w-3.5" />
@@ -205,25 +259,33 @@ function MeetingsPage() {
 
                 <AICopilotPanel meeting={selected} />
 
-                {Array.isArray(selected.agenda) && selected.agenda.length > 0 && !selected.ai_prep && (
-                  <div className="rounded-xl border border-border bg-surface p-4">
-                    <p className="text-[11px] uppercase tracking-wider text-foreground-subtle mb-3">Agenda</p>
-                    <ol className="space-y-1.5 list-decimal list-inside">
-                      {selected.agenda.map((a: any, i: number) => (
-                        <li key={i} className="text-[13px] text-foreground">
-                          {typeof a === "string" ? a : a.title ?? "Item"}
-                          {typeof a === "object" && a.duration && (
-                            <span className="text-foreground-subtle text-[11px] ml-2">{a.duration}m</span>
-                          )}
-                        </li>
-                      ))}
-                    </ol>
-                  </div>
-                )}
+                {Array.isArray(selected.agenda) &&
+                  selected.agenda.length > 0 &&
+                  !selected.ai_prep && (
+                    <div className="rounded-xl border border-border bg-surface p-4">
+                      <p className="text-[11px] uppercase tracking-wider text-foreground-subtle mb-3">
+                        Agenda
+                      </p>
+                      <ol className="space-y-1.5 list-decimal list-inside">
+                        {selected.agenda.map((a: any, i: number) => (
+                          <li key={i} className="text-[13px] text-foreground">
+                            {typeof a === "string" ? a : (a.title ?? "Item")}
+                            {typeof a === "object" && a.duration && (
+                              <span className="text-foreground-subtle text-[11px] ml-2">
+                                {a.duration}m
+                              </span>
+                            )}
+                          </li>
+                        ))}
+                      </ol>
+                    </div>
+                  )}
 
                 <div className="rounded-xl border border-border bg-surface p-4">
                   <div className="flex items-center justify-between mb-2">
-                    <p className="text-[11px] uppercase tracking-wider text-foreground-subtle">Notes</p>
+                    <p className="text-[11px] uppercase tracking-wider text-foreground-subtle">
+                      Notes
+                    </p>
                     <PrimaryBtn onClick={saveNotes}>Save notes</PrimaryBtn>
                   </div>
                   <TextArea rows={5} value={notes} onChange={(e) => setNotes(e.target.value)} />
@@ -231,7 +293,9 @@ function MeetingsPage() {
 
                 {Array.isArray(selected.action_items) && selected.action_items.length > 0 && (
                   <div className="rounded-xl border border-border bg-surface p-4">
-                    <p className="text-[11px] uppercase tracking-wider text-foreground-subtle mb-3">Action items</p>
+                    <p className="text-[11px] uppercase tracking-wider text-foreground-subtle mb-3">
+                      Action items
+                    </p>
                     <div className="space-y-1.5">
                       {selected.action_items.map((it: any, i: number) => (
                         <button
@@ -239,11 +303,15 @@ function MeetingsPage() {
                           onClick={() => toggleActionItem(i)}
                           className="w-full flex items-center gap-2 text-left py-1 group"
                         >
-                          {it.done
-                            ? <CheckSquare className="h-3.5 w-3.5 text-foreground shrink-0" />
-                            : <Square className="h-3.5 w-3.5 text-foreground-subtle shrink-0" />}
-                          <span className={`text-[13px] ${it.done ? "text-foreground-subtle line-through" : "text-foreground"}`}>
-                            {typeof it === "string" ? it : it.text ?? "Task"}
+                          {it.done ? (
+                            <CheckSquare className="h-3.5 w-3.5 text-foreground shrink-0" />
+                          ) : (
+                            <Square className="h-3.5 w-3.5 text-foreground-subtle shrink-0" />
+                          )}
+                          <span
+                            className={`text-[13px] ${it.done ? "text-foreground-subtle line-through" : "text-foreground"}`}
+                          >
+                            {typeof it === "string" ? it : (it.text ?? "Task")}
                           </span>
                         </button>
                       ))}
@@ -252,10 +320,16 @@ function MeetingsPage() {
                 )}
 
                 <div className="rounded-xl border border-border bg-surface p-4">
-                  <p className="text-[11px] uppercase tracking-wider text-foreground-subtle mb-3">Timeline</p>
-                  <p className="text-[12px] text-foreground-muted">Created {fmtDate(selected.created_at)}</p>
+                  <p className="text-[11px] uppercase tracking-wider text-foreground-subtle mb-3">
+                    Timeline
+                  </p>
+                  <p className="text-[12px] text-foreground-muted">
+                    Created {fmtDate(selected.created_at)}
+                  </p>
                   {selected.updated_at !== selected.created_at && (
-                    <p className="text-[12px] text-foreground-muted mt-1">Updated {fmtDate(selected.updated_at)}</p>
+                    <p className="text-[12px] text-foreground-muted mt-1">
+                      Updated {fmtDate(selected.updated_at)}
+                    </p>
                   )}
                 </div>
               </div>
@@ -272,7 +346,9 @@ function MeetingsPage() {
             await insert.mutateAsync(v);
             toast.success("Scheduled");
             setCreating(false);
-          } catch (e) { toast.error((e as Error).message); }
+          } catch (e) {
+            toast.error((e as Error).message);
+          }
         }}
       />
     </div>
@@ -284,7 +360,9 @@ function MeetingItem({ m, active, onClick }: { m: any; active: boolean; onClick:
     <button
       onClick={onClick}
       className={`w-full text-left rounded-lg border p-2.5 transition ${
-        active ? "border-border-strong bg-surface" : "border-border bg-surface hover:border-border-strong"
+        active
+          ? "border-border-strong bg-surface"
+          : "border-border bg-surface hover:border-border-strong"
       }`}
     >
       <p className="text-[13px] font-medium text-foreground truncate">{m.title}</p>
@@ -293,9 +371,19 @@ function MeetingItem({ m, active, onClick }: { m: any; active: boolean; onClick:
   );
 }
 
-function MeetingForm({ open, onClose, onSubmit }: { open: boolean; onClose: () => void; onSubmit: (v: any) => Promise<void> }) {
+function MeetingForm({
+  open,
+  onClose,
+  onSubmit,
+}: {
+  open: boolean;
+  onClose: () => void;
+  onSubmit: (v: any) => Promise<void>;
+}) {
   const [title, setTitle] = useState("");
-  const [startsAt, setStartsAt] = useState(new Date(Date.now() + 60 * 60 * 1000).toISOString().slice(0, 16));
+  const [startsAt, setStartsAt] = useState(
+    new Date(Date.now() + 60 * 60 * 1000).toISOString().slice(0, 16),
+  );
   const [duration, setDuration] = useState(30);
   const [description, setDescription] = useState("");
   const [location, setLocation] = useState("");
@@ -321,20 +409,43 @@ function MeetingForm({ open, onClose, onSubmit }: { open: boolean; onClose: () =
             attendees: [],
           });
           setSubmitting(false);
-          setTitle(""); setDescription(""); setLocation("");
+          setTitle("");
+          setDescription("");
+          setLocation("");
         }}
         className="space-y-3"
       >
-        <Field label="Title"><TextInput required value={title} onChange={(e) => setTitle(e.target.value)} /></Field>
+        <Field label="Title">
+          <TextInput required value={title} onChange={(e) => setTitle(e.target.value)} />
+        </Field>
         <div className="grid grid-cols-2 gap-3">
-          <Field label="Starts at"><TextInput type="datetime-local" value={startsAt} onChange={(e) => setStartsAt(e.target.value)} /></Field>
-          <Field label="Duration (min)"><TextInput type="number" min={5} value={duration} onChange={(e) => setDuration(Number(e.target.value))} /></Field>
+          <Field label="Starts at">
+            <TextInput
+              type="datetime-local"
+              value={startsAt}
+              onChange={(e) => setStartsAt(e.target.value)}
+            />
+          </Field>
+          <Field label="Duration (min)">
+            <TextInput
+              type="number"
+              min={5}
+              value={duration}
+              onChange={(e) => setDuration(Number(e.target.value))}
+            />
+          </Field>
         </div>
-        <Field label="Location / Link"><TextInput value={location} onChange={(e) => setLocation(e.target.value)} /></Field>
-        <Field label="Description"><TextArea value={description} onChange={(e) => setDescription(e.target.value)} /></Field>
+        <Field label="Location / Link">
+          <TextInput value={location} onChange={(e) => setLocation(e.target.value)} />
+        </Field>
+        <Field label="Description">
+          <TextArea value={description} onChange={(e) => setDescription(e.target.value)} />
+        </Field>
         <div className="flex justify-end gap-2 pt-2">
           <GhostBtn onClick={onClose}>Cancel</GhostBtn>
-          <PrimaryBtn type="submit" disabled={submitting || !title}>Schedule</PrimaryBtn>
+          <PrimaryBtn type="submit" disabled={submitting || !title}>
+            Schedule
+          </PrimaryBtn>
         </div>
       </form>
     </Modal>
@@ -349,11 +460,15 @@ function AICopilotPanel({ meeting }: { meeting: any }) {
   const [showTranscript, setShowTranscript] = useState(false);
 
   const activePrep = (jobs as any[]).find(
-    (j) => j.entity_id === meeting.id && j.kind === "meeting_prep" &&
+    (j) =>
+      j.entity_id === meeting.id &&
+      j.kind === "meeting_prep" &&
       (j.status === "queued" || j.status === "running"),
   );
   const activeRecap = (jobs as any[]).find(
-    (j) => j.entity_id === meeting.id && j.kind === "meeting_recap" &&
+    (j) =>
+      j.entity_id === meeting.id &&
+      j.kind === "meeting_recap" &&
       (j.status === "queued" || j.status === "running"),
   );
 
@@ -366,7 +481,9 @@ function AICopilotPanel({ meeting }: { meeting: any }) {
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <Sparkles className="h-3.5 w-3.5 text-foreground" />
-          <p className="text-[11px] uppercase tracking-wider text-foreground-subtle">AI Meeting Copilot</p>
+          <p className="text-[11px] uppercase tracking-wider text-foreground-subtle">
+            AI Meeting Copilot
+          </p>
         </div>
         <div className="flex items-center gap-2">
           {!isPast && (
@@ -379,7 +496,13 @@ function AICopilotPanel({ meeting }: { meeting: any }) {
           )}
           {isPast && (
             <PrimaryBtn
-              onClick={() => recap.mutate({ meetingId: meeting.id, transcript: transcript || undefined, force: !!s })}
+              onClick={() =>
+                recap.mutate({
+                  meetingId: meeting.id,
+                  transcript: transcript || undefined,
+                  force: !!s,
+                })
+              }
               disabled={!!activeRecap || recap.isPending}
             >
               {activeRecap ? "Generating…" : s ? "Refresh recap" : "Generate recap"}
@@ -404,14 +527,17 @@ function AICopilotPanel({ meeting }: { meeting: any }) {
 
       {!isPast && !p && !activePrep && (
         <p className="text-[12px] text-foreground-subtle">
-          Generate an AI brief grounded in this company's research, the lead's intelligence and the meeting context — agenda, discovery questions, objections, demo flow and pricing talk-track.
+          Generate an AI brief grounded in this company's research, the lead's intelligence and the
+          meeting context — agenda, discovery questions, objections, demo flow and pricing
+          talk-track.
         </p>
       )}
 
       {isPast && !s && !activeRecap && (
         <>
           <p className="text-[12px] text-foreground-subtle">
-            Generate a recap from your notes: summary, action items, follow-up tasks and a ready-to-send follow-up email.
+            Generate a recap from your notes: summary, action items, follow-up tasks and a
+            ready-to-send follow-up email.
           </p>
           <button
             onClick={() => setShowTranscript((v) => !v)}
@@ -441,7 +567,9 @@ function PrepView({ p }: { p: any }) {
     <div className="space-y-4">
       {p.brief && (
         <div>
-          <p className="text-[11px] uppercase tracking-wider text-foreground-subtle mb-1.5">Brief</p>
+          <p className="text-[11px] uppercase tracking-wider text-foreground-subtle mb-1.5">
+            Brief
+          </p>
           <p className="text-[13px] text-foreground">{p.brief}</p>
         </div>
       )}
@@ -451,7 +579,9 @@ function PrepView({ p }: { p: any }) {
             {p.agenda.map((a: any, i: number) => (
               <li key={i} className="text-[13px] text-foreground">
                 {a.title}
-                {a.minutes ? <span className="text-foreground-subtle text-[11px] ml-2">{a.minutes}m</span> : null}
+                {a.minutes ? (
+                  <span className="text-foreground-subtle text-[11px] ml-2">{a.minutes}m</span>
+                ) : null}
               </li>
             ))}
           </ol>
@@ -481,7 +611,9 @@ function PrepView({ p }: { p: any }) {
             {p.demo_flow.map((d: any, i: number) => (
               <li key={i} className="text-[13px] text-foreground">
                 {d.step}
-                {d.focus ? <span className="text-foreground-subtle text-[11px] ml-2">— {d.focus}</span> : null}
+                {d.focus ? (
+                  <span className="text-foreground-subtle text-[11px] ml-2">— {d.focus}</span>
+                ) : null}
               </li>
             ))}
           </ol>
@@ -492,27 +624,31 @@ function PrepView({ p }: { p: any }) {
           {p.pricing_discussion.positioning && (
             <p className="text-[13px] text-foreground mb-2">{p.pricing_discussion.positioning}</p>
           )}
-          {Array.isArray(p.pricing_discussion.anchors) && p.pricing_discussion.anchors.length > 0 && (
-            <div className="mb-2">
-              <p className="text-[11px] text-foreground-subtle">Anchors</p>
-              <ul className="list-disc list-inside text-[12.5px] text-foreground">
-                {p.pricing_discussion.anchors.map((a: string, i: number) => <li key={i}>{a}</li>)}
-              </ul>
-            </div>
-          )}
-          {Array.isArray(p.pricing_discussion.objection_responses) && p.pricing_discussion.objection_responses.length > 0 && (
-            <div>
-              <p className="text-[11px] text-foreground-subtle">If they push back</p>
-              <ul className="list-disc list-inside text-[12.5px] text-foreground">
-                {p.pricing_discussion.objection_responses.map((a: string, i: number) => <li key={i}>{a}</li>)}
-              </ul>
-            </div>
-          )}
+          {Array.isArray(p.pricing_discussion.anchors) &&
+            p.pricing_discussion.anchors.length > 0 && (
+              <div className="mb-2">
+                <p className="text-[11px] text-foreground-subtle">Anchors</p>
+                <ul className="list-disc list-inside text-[12.5px] text-foreground">
+                  {p.pricing_discussion.anchors.map((a: string, i: number) => (
+                    <li key={i}>{a}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          {Array.isArray(p.pricing_discussion.objection_responses) &&
+            p.pricing_discussion.objection_responses.length > 0 && (
+              <div>
+                <p className="text-[11px] text-foreground-subtle">If they push back</p>
+                <ul className="list-disc list-inside text-[12.5px] text-foreground">
+                  {p.pricing_discussion.objection_responses.map((a: string, i: number) => (
+                    <li key={i}>{a}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
         </AISection>
       )}
-      {Array.isArray(p.risks) && p.risks.length > 0 && (
-        <AIBullets title="Risks" items={p.risks} />
-      )}
+      {Array.isArray(p.risks) && p.risks.length > 0 && <AIBullets title="Risks" items={p.risks} />}
       {Array.isArray(p.success_criteria) && p.success_criteria.length > 0 && (
         <AIBullets title="Success criteria" items={p.success_criteria} />
       )}
@@ -525,7 +661,9 @@ function RecapView({ s }: { s: any }) {
     <div className="space-y-4">
       {s.summary && (
         <div>
-          <p className="text-[11px] uppercase tracking-wider text-foreground-subtle mb-1.5">Summary</p>
+          <p className="text-[11px] uppercase tracking-wider text-foreground-subtle mb-1.5">
+            Summary
+          </p>
           <p className="text-[13px] text-foreground whitespace-pre-wrap">{s.summary}</p>
         </div>
       )}
@@ -538,8 +676,12 @@ function RecapView({ s }: { s: any }) {
             {s.action_items.map((a: any, i: number) => (
               <li key={i} className="text-[13px] text-foreground">
                 • {a.text}
-                {a.owner ? <span className="text-foreground-subtle text-[11px] ml-2">@{a.owner}</span> : null}
-                {a.due ? <span className="text-foreground-subtle text-[11px] ml-2">· {a.due}</span> : null}
+                {a.owner ? (
+                  <span className="text-foreground-subtle text-[11px] ml-2">@{a.owner}</span>
+                ) : null}
+                {a.due ? (
+                  <span className="text-foreground-subtle text-[11px] ml-2">· {a.due}</span>
+                ) : null}
               </li>
             ))}
           </ul>
@@ -551,7 +693,9 @@ function RecapView({ s }: { s: any }) {
             {s.follow_up_tasks.map((t: any, i: number) => (
               <li key={i} className="text-[13px] text-foreground">
                 • {t.title}
-                {t.priority ? <span className="text-foreground-subtle text-[11px] ml-2">[{t.priority}]</span> : null}
+                {t.priority ? (
+                  <span className="text-foreground-subtle text-[11px] ml-2">[{t.priority}]</span>
+                ) : null}
               </li>
             ))}
           </ul>
@@ -562,7 +706,9 @@ function RecapView({ s }: { s: any }) {
           <p className="text-[12.5px] font-medium text-foreground mb-1">
             Subject: {s.follow_up_email.subject}
           </p>
-          <p className="text-[13px] text-foreground whitespace-pre-wrap">{s.follow_up_email.body}</p>
+          <p className="text-[13px] text-foreground whitespace-pre-wrap">
+            {s.follow_up_email.body}
+          </p>
           <div className="pt-2">
             <GhostBtn
               onClick={() => {
@@ -597,7 +743,11 @@ function AIBullets({ title, items }: { title: string; items: string[] }) {
   return (
     <AISection title={title}>
       <ul className="space-y-1 list-disc list-inside">
-        {items.map((x, i) => <li key={i} className="text-[13px] text-foreground">{x}</li>)}
+        {items.map((x, i) => (
+          <li key={i} className="text-[13px] text-foreground">
+            {x}
+          </li>
+        ))}
       </ul>
     </AISection>
   );

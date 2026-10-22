@@ -74,7 +74,9 @@ async function gatherContext(
       (async () => {
         const { data } = await supabase
           .from("crm_deals")
-          .select("id,name,stage,value,probability,expected_close_date,updated_at,company_id,lead_id")
+          .select(
+            "id,name,stage,value,probability,expected_close_date,updated_at,company_id,lead_id",
+          )
           .eq("workspace_id", workspaceId)
           .order("updated_at", { ascending: false })
           .limit(40);
@@ -98,7 +100,9 @@ async function gatherContext(
       (async () => {
         const { data } = await supabase
           .from("leads")
-          .select("id,stage,score,intent_score,temperature,priority,buying_intent,win_probability,next_action,ai_insight,last_activity_at,company_id,contact_id,updated_at")
+          .select(
+            "id,stage,score,intent_score,temperature,priority,buying_intent,win_probability,next_action,ai_insight,last_activity_at,company_id,contact_id,updated_at",
+          )
           .eq("workspace_id", workspaceId)
           .order("score", { ascending: false, nullsFirst: false })
           .limit(30);
@@ -237,7 +241,6 @@ async function gatherContext(
     );
   }
 
-
   if (wantAll || flags.revenue || flags.deals) {
     p.push(
       (async () => {
@@ -257,7 +260,9 @@ async function gatherContext(
             kind: "revenue",
             label: "AI Revenue Intelligence",
             href: "/analytics",
-            detail: latest.completed_at ? new Date(latest.completed_at).toLocaleString() : undefined,
+            detail: latest.completed_at
+              ? new Date(latest.completed_at).toLocaleString()
+              : undefined,
           });
         }
       })(),

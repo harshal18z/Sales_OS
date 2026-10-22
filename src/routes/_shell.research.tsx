@@ -1,11 +1,26 @@
 import { createFileRoute } from "@/lib/router-compat";
 import { useState } from "react";
 import { toast } from "sonner";
-import { ExternalLink, FileText, Loader2, Plus, RefreshCw, Search, Sparkles, Trash2 } from "lucide-react";
+import {
+  ExternalLink,
+  FileText,
+  Loader2,
+  Plus,
+  RefreshCw,
+  Search,
+  Sparkles,
+  Trash2,
+} from "lucide-react";
 import { useAIJobs, useDeleteRow, useResearchReports, useResearchSources } from "@/hooks/use-data";
 import { useAIResearch } from "@/hooks/use-ai";
 import {
-  EmptyState, Field, GhostBtn, Modal, PageHeader, PrimaryBtn, SkeletonList,
+  EmptyState,
+  Field,
+  GhostBtn,
+  Modal,
+  PageHeader,
+  PrimaryBtn,
+  SkeletonList,
   TextInput,
 } from "@/components/app/data-ui";
 
@@ -50,7 +65,6 @@ function ResearchPage() {
       toast.error((e as Error).message);
     }
   }
-
 
   async function handleDelete(id: string) {
     if (!confirm("Delete this report?")) return;
@@ -103,9 +117,7 @@ function ResearchPage() {
                         : "border-border bg-surface hover:border-border-strong"
                     }`}
                   >
-                    <p className="text-[13px] font-medium text-foreground truncate">
-                      {r.query}
-                    </p>
+                    <p className="text-[13px] font-medium text-foreground truncate">{r.query}</p>
                     <p className="text-[11px] text-foreground-subtle mt-0.5">
                       {r.status === "complete" ? (
                         <>
@@ -232,15 +244,23 @@ function ResearchPage() {
 
                 {report.social_links && Object.keys(report.social_links).length > 0 && (
                   <div className="rounded-xl border border-border bg-surface p-5">
-                    <p className="text-[11px] uppercase tracking-wider text-foreground-subtle mb-3">Social</p>
+                    <p className="text-[11px] uppercase tracking-wider text-foreground-subtle mb-3">
+                      Social
+                    </p>
                     <div className="flex flex-wrap gap-2">
-                      {Object.entries(report.social_links as Record<string, string>).map(([k, v]) =>
-                        v ? (
-                          <a key={k} href={v} target="_blank" rel="noreferrer"
-                            className="text-[12px] rounded-full border border-border px-2.5 py-1 text-foreground-muted hover:text-foreground hover:border-border-strong inline-flex items-center gap-1">
-                            {k} <ExternalLink className="h-3 w-3" />
-                          </a>
-                        ) : null,
+                      {Object.entries(report.social_links as Record<string, string>).map(
+                        ([k, v]) =>
+                          v ? (
+                            <a
+                              key={k}
+                              href={v}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-[12px] rounded-full border border-border px-2.5 py-1 text-foreground-muted hover:text-foreground hover:border-border-strong inline-flex items-center gap-1"
+                            >
+                              {k} <ExternalLink className="h-3 w-3" />
+                            </a>
+                          ) : null,
                       )}
                     </div>
                   </div>
@@ -251,16 +271,32 @@ function ResearchPage() {
                 <ListSection title="Competitive advantages" items={report.competitive_advantages} />
                 <ListSection title="Hiring trends" items={report.hiring_trends} />
                 <ListSection title="Competitors" items={report.competitors} />
-                <ListSection title="Pain points" items={selected.pain_points ?? report.pain_points} />
+                <ListSection
+                  title="Pain points"
+                  items={selected.pain_points ?? report.pain_points}
+                />
                 <ListSection title="Buying signals" items={report.buying_signals} />
                 <ListSection title="Likely objections" items={report.objections} />
-                <ListSection title="Sales opportunities" items={report.sales_opportunities ?? selected.opportunities} />
+                <ListSection
+                  title="Sales opportunities"
+                  items={report.sales_opportunities ?? selected.opportunities}
+                />
                 <ListSection title="Outreach opportunities" items={report.outreach_opportunities} />
-                <ObjSection title="Recent news" items={report.recent_news} keyField="title" noteField="note" />
-                <ObjSection title="Decision makers" items={report.decision_makers} keyField="title" noteField="note" nameField="name" />
+                <ObjSection
+                  title="Recent news"
+                  items={report.recent_news}
+                  keyField="title"
+                  noteField="note"
+                />
+                <ObjSection
+                  title="Decision makers"
+                  items={report.decision_makers}
+                  keyField="title"
+                  noteField="note"
+                  nameField="name"
+                />
 
                 <SourcesSection sources={sources as any[]} />
-
               </div>
             )}
           </div>
@@ -269,7 +305,10 @@ function ResearchPage() {
 
       <Modal open={asking} onClose={() => setAsking(false)} title="Research a company">
         <form
-          onSubmit={(e) => { e.preventDefault(); void handleAsk(); }}
+          onSubmit={(e) => {
+            e.preventDefault();
+            void handleAsk();
+          }}
           className="space-y-3"
         >
           <Field label="Company name or website">
@@ -292,9 +331,13 @@ function ResearchPage() {
             <GhostBtn onClick={() => setAsking(false)}>Cancel</GhostBtn>
             <PrimaryBtn type="submit" disabled={!url || research.isPending}>
               {research.isPending ? (
-                <><Loader2 className="h-3.5 w-3.5 animate-spin" /> Researching…</>
+                <>
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" /> Researching…
+                </>
               ) : (
-                <><Sparkles className="h-3.5 w-3.5" /> Run pipeline</>
+                <>
+                  <Sparkles className="h-3.5 w-3.5" /> Run pipeline
+                </>
               )}
             </PrimaryBtn>
           </div>
@@ -338,7 +381,11 @@ function ListSection({ title, items }: { title: string; items: unknown }) {
 }
 
 function ObjSection({
-  title, items, keyField, noteField, nameField,
+  title,
+  items,
+  keyField,
+  noteField,
+  nameField,
 }: {
   title: string;
   items: unknown;

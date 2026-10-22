@@ -25,14 +25,30 @@ function useWSList<T = unknown>(
   });
 }
 
-export function useCampaigns() { return useWSList<any>("campaigns", "campaigns"); }
-export function useCompanies() { return useWSList<any>("companies", "companies"); }
-export function useContacts() { return useWSList<any>("contacts", "contacts"); }
-export function useLeads() { return useWSList<any>("leads", "leads"); }
-export function useEmails() { return useWSList<any>("emails", "emails"); }
-export function useDeals() { return useWSList<any>("crm_deals", "crm_deals"); }
-export function useResearchReports() { return useWSList<any>("research_reports", "research_reports"); }
-export function useActivityLogs() { return useWSList<any>("activity_logs", "activity_logs"); }
+export function useCampaigns() {
+  return useWSList<any>("campaigns", "campaigns");
+}
+export function useCompanies() {
+  return useWSList<any>("companies", "companies");
+}
+export function useContacts() {
+  return useWSList<any>("contacts", "contacts");
+}
+export function useLeads() {
+  return useWSList<any>("leads", "leads");
+}
+export function useEmails() {
+  return useWSList<any>("emails", "emails");
+}
+export function useDeals() {
+  return useWSList<any>("crm_deals", "crm_deals");
+}
+export function useResearchReports() {
+  return useWSList<any>("research_reports", "research_reports");
+}
+export function useActivityLogs() {
+  return useWSList<any>("activity_logs", "activity_logs");
+}
 export function useAIJobs() {
   const { workspaceId } = useWorkspace();
   return useQuery({
@@ -71,8 +87,12 @@ export function useResearchSources(reportId: string | null | undefined) {
     },
   });
 }
-export function useTasks() { return useWSList<any>("tasks", "tasks"); }
-export function useNotifications() { return useWSList<any>("notifications", "notifications"); }
+export function useTasks() {
+  return useWSList<any>("tasks", "tasks");
+}
+export function useNotifications() {
+  return useWSList<any>("notifications", "notifications");
+}
 
 export function useMeetings() {
   const { workspaceId } = useWorkspace();
@@ -165,7 +185,10 @@ export function useDeleteRow(table: string, invalidateKey: string) {
   const { workspaceId } = useWorkspace();
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from(table as never).delete().eq("id", id);
+      const { error } = await supabase
+        .from(table as never)
+        .delete()
+        .eq("id", id);
       if (error) throw error;
       if (workspaceId) {
         await logActivity(workspaceId, table, id, "delete");

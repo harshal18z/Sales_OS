@@ -1,12 +1,31 @@
 import { createFileRoute } from "@/lib/router-compat";
 import { useMemo } from "react";
 import {
-  ArrowDownRight, ArrowUpRight, BarChart3, Brain, DollarSign, Gauge,
-  Loader2, Mail, RefreshCw, Sparkles, Target, TrendingDown, TrendingUp,
-  Users, AlertTriangle, Lightbulb,
+  ArrowDownRight,
+  ArrowUpRight,
+  BarChart3,
+  Brain,
+  DollarSign,
+  Gauge,
+  Loader2,
+  Mail,
+  RefreshCw,
+  Sparkles,
+  Target,
+  TrendingDown,
+  TrendingUp,
+  Users,
+  AlertTriangle,
+  Lightbulb,
 } from "lucide-react";
 import {
-  useAIJobs, useCampaigns, useCompanies, useDeals, useEmails, useLeads, useMeetings,
+  useAIJobs,
+  useCampaigns,
+  useCompanies,
+  useDeals,
+  useEmails,
+  useLeads,
+  useMeetings,
 } from "@/hooks/use-data";
 import { useAIRevenueIntelligence } from "@/hooks/use-ai";
 import { EmptyState, PageHeader, SkeletonList } from "@/components/app/data-ui";
@@ -25,17 +44,51 @@ function fmtMoney(v: number) {
 type RevenueIntelligenceOutput = {
   executive_summary?: string;
   headline_metric?: { label: string; value: string; delta: string };
-  insights?: { title: string; detail: string; sentiment: "positive" | "negative" | "neutral"; metric?: string }[];
-  recommendations?: { title: string; detail: string; impact: "high" | "medium" | "low"; area: string }[];
-  win_rate_prediction?: { next_30d_pct: number; confidence: "low" | "medium" | "high"; drivers: string[] };
+  insights?: {
+    title: string;
+    detail: string;
+    sentiment: "positive" | "negative" | "neutral";
+    metric?: string;
+  }[];
+  recommendations?: {
+    title: string;
+    detail: string;
+    impact: "high" | "medium" | "low";
+    area: string;
+  }[];
+  win_rate_prediction?: {
+    next_30d_pct: number;
+    confidence: "low" | "medium" | "high";
+    drivers: string[];
+  };
   forecast_narrative?: string;
   risk_narrative?: string;
   metrics?: {
-    revenue?: { won_value: number; velocity_per_day: number; win_rate: number; trend: { month: string; value: number; count: number }[]; trend_delta_pct: number };
-    pipeline?: { open_value: number; weighted_value: number; health_score: number; stalled_count: number; high_risk_count: number; open_count: number };
+    revenue?: {
+      won_value: number;
+      velocity_per_day: number;
+      win_rate: number;
+      trend: { month: string; value: number; count: number }[];
+      trend_delta_pct: number;
+    };
+    pipeline?: {
+      open_value: number;
+      weighted_value: number;
+      health_score: number;
+      stalled_count: number;
+      high_risk_count: number;
+      open_count: number;
+    };
     funnel_conversion?: { from: string; to: string; rate: number }[];
     forecast?: { days: number; value: number; deals: number }[];
-    top_risks?: { id: string; name: string; value: number; stage: string; risk: number; reasons: string[] }[];
+    top_risks?: {
+      id: string;
+      name: string;
+      value: number;
+      stage: string;
+      risk: number;
+      reasons: string[];
+    }[];
   };
   generated_at?: string;
   stage?: string;
@@ -61,7 +114,9 @@ function AnalyticsPage() {
     const total = (emails as any[]).length;
     const replyRate = total > 0 ? Math.round((sent / total) * 100) : 0;
     const meetingsCount = meetings.length;
-    const qualified = (leads as any[]).filter((l) => ["qualified", "engaged"].includes(l.stage)).length;
+    const qualified = (leads as any[]).filter((l) =>
+      ["qualified", "engaged"].includes(l.stage),
+    ).length;
     const conv = leads.length > 0 ? Math.round((qualified / leads.length) * 100) : 0;
     return { totalPipeline, revenue, replyRate, meetingsCount, conv };
   }, [deals, emails, meetings, leads]);
@@ -84,14 +139,17 @@ function AnalyticsPage() {
     return stages.map((s) => ({
       stage: s,
       count: (deals as any[]).filter((d) => d.stage === s).length,
-      value: (deals as any[]).filter((d) => d.stage === s).reduce((sum, d) => sum + Number(d.value ?? 0), 0),
+      value: (deals as any[])
+        .filter((d) => d.stage === s)
+        .reduce((sum, d) => sum + Number(d.value ?? 0), 0),
     }));
   }, [deals]);
 
   const maxStageValue = Math.max(1, ...dealsByStage.map((s) => s.value));
   const maxFunnel = Math.max(1, funnel[0].value);
 
-  const hasAnyData = leads.length + companies.length + deals.length + emails.length + campaigns.length > 0;
+  const hasAnyData =
+    leads.length + companies.length + deals.length + emails.length + campaigns.length > 0;
 
   // Live AI job for revenue_intelligence.
   const riJob = useMemo(() => {
@@ -186,8 +244,8 @@ function AnalyticsPage() {
               {!ri && !riRunning && (
                 <div className="px-5 py-8 text-center">
                   <p className="text-[12px] text-foreground-muted max-w-md mx-auto">
-                    Generate a revenue forecast, pipeline health score, deal risk analysis,
-                    win-rate prediction, and an executive summary from your live workspace data.
+                    Generate a revenue forecast, pipeline health score, deal risk analysis, win-rate
+                    prediction, and an executive summary from your live workspace data.
                   </p>
                 </div>
               )}
@@ -207,7 +265,11 @@ function AnalyticsPage() {
                       icon={Target}
                       label="Win-rate (next 30d)"
                       value={`${ri.win_rate_prediction?.next_30d_pct ?? 0}%`}
-                      hint={ri.win_rate_prediction?.confidence ? `${ri.win_rate_prediction.confidence} confidence` : undefined}
+                      hint={
+                        ri.win_rate_prediction?.confidence
+                          ? `${ri.win_rate_prediction.confidence} confidence`
+                          : undefined
+                      }
                     />
                     <MetricTile
                       icon={DollarSign}
@@ -219,7 +281,9 @@ function AnalyticsPage() {
                       icon={TrendingUp}
                       label="Trend Δ (MoM)"
                       value={`${ri.metrics?.revenue?.trend_delta_pct ?? 0}%`}
-                      tone={(ri.metrics?.revenue?.trend_delta_pct ?? 0) >= 0 ? "positive" : "negative"}
+                      tone={
+                        (ri.metrics?.revenue?.trend_delta_pct ?? 0) >= 0 ? "positive" : "negative"
+                      }
                     />
                   </div>
 
@@ -243,7 +307,10 @@ function AnalyticsPage() {
                       </p>
                       <div className="grid grid-cols-3 gap-3">
                         {(ri.metrics?.forecast ?? []).map((f) => (
-                          <div key={f.days} className="rounded-md border border-border bg-surface p-3">
+                          <div
+                            key={f.days}
+                            className="rounded-md border border-border bg-surface p-3"
+                          >
                             <p className="text-[10px] text-foreground-subtle">Next {f.days}d</p>
                             <p className="mt-1 text-[17px] font-semibold text-foreground tracking-tight">
                               {fmtMoney(f.value)}
@@ -310,9 +377,13 @@ function AnalyticsPage() {
                             <SentimentDot sentiment={i.sentiment} />
                             <div className="min-w-0">
                               <p className="text-[12.5px] font-medium text-foreground">{i.title}</p>
-                              <p className="text-[11.5px] text-foreground-muted leading-relaxed">{i.detail}</p>
+                              <p className="text-[11.5px] text-foreground-muted leading-relaxed">
+                                {i.detail}
+                              </p>
                               {i.metric && (
-                                <p className="mt-0.5 text-[10px] text-foreground-subtle">{i.metric}</p>
+                                <p className="mt-0.5 text-[10px] text-foreground-subtle">
+                                  {i.metric}
+                                </p>
                               )}
                             </div>
                           </div>
@@ -332,10 +403,16 @@ function AnalyticsPage() {
                           <div key={idx} className="rounded-md border border-border p-2.5">
                             <div className="flex items-center gap-2">
                               <ImpactPill impact={r.impact} />
-                              <span className="text-[10px] text-foreground-subtle capitalize">{r.area}</span>
+                              <span className="text-[10px] text-foreground-subtle capitalize">
+                                {r.area}
+                              </span>
                             </div>
-                            <p className="mt-1 text-[12.5px] font-medium text-foreground">{r.title}</p>
-                            <p className="text-[11.5px] text-foreground-muted leading-relaxed">{r.detail}</p>
+                            <p className="mt-1 text-[12.5px] font-medium text-foreground">
+                              {r.title}
+                            </p>
+                            <p className="text-[11.5px] text-foreground-muted leading-relaxed">
+                              {r.detail}
+                            </p>
                           </div>
                         ))}
                       </div>
@@ -358,20 +435,31 @@ function AnalyticsPage() {
                       )}
                       <div className="space-y-2">
                         {ri.metrics!.top_risks!.map((r) => (
-                          <div key={r.id} className="flex items-center gap-3 rounded-md border border-border px-3 py-2">
+                          <div
+                            key={r.id}
+                            className="flex items-center gap-3 rounded-md border border-border px-3 py-2"
+                          >
                             <div
                               className={`h-1.5 w-1.5 rounded-full shrink-0 ${
-                                r.risk >= 70 ? "bg-destructive" : r.risk >= 50 ? "bg-warning" : "bg-foreground-subtle"
+                                r.risk >= 70
+                                  ? "bg-destructive"
+                                  : r.risk >= 50
+                                    ? "bg-warning"
+                                    : "bg-foreground-subtle"
                               }`}
                             />
                             <div className="min-w-0 flex-1">
-                              <p className="text-[12.5px] font-medium text-foreground truncate">{r.name}</p>
+                              <p className="text-[12.5px] font-medium text-foreground truncate">
+                                {r.name}
+                              </p>
                               <p className="text-[10.5px] text-foreground-subtle truncate">
                                 {r.stage} · {r.reasons.join(" · ")}
                               </p>
                             </div>
                             <div className="text-right shrink-0">
-                              <p className="text-[12px] font-medium text-foreground">{fmtMoney(r.value)}</p>
+                              <p className="text-[12px] font-medium text-foreground">
+                                {fmtMoney(r.value)}
+                              </p>
                               <p className="text-[10px] text-foreground-subtle">risk {r.risk}</p>
                             </div>
                           </div>
@@ -388,7 +476,10 @@ function AnalyticsPage() {
                       </p>
                       <ul className="space-y-1.5">
                         {ri.win_rate_prediction.drivers.map((d, i) => (
-                          <li key={i} className="text-[12px] text-foreground-muted flex items-start gap-2">
+                          <li
+                            key={i}
+                            className="text-[12px] text-foreground-muted flex items-start gap-2"
+                          >
                             <span className="text-foreground-subtle mt-1">·</span>
                             <span>{d}</span>
                           </li>
@@ -410,11 +501,15 @@ function AnalyticsPage() {
                     <div key={s.stage}>
                       <div className="flex items-center justify-between text-[12px]">
                         <span className="text-foreground capitalize">{s.stage}</span>
-                        <span className="text-foreground-muted">{s.count} · {fmtMoney(s.value)}</span>
+                        <span className="text-foreground-muted">
+                          {s.count} · {fmtMoney(s.value)}
+                        </span>
                       </div>
                       <div className="mt-1 h-2 rounded-full bg-surface-muted overflow-hidden">
-                        <div className="h-full bg-foreground rounded-full transition-all"
-                          style={{ width: `${(s.value / maxStageValue) * 100}%` }} />
+                        <div
+                          className="h-full bg-foreground rounded-full transition-all"
+                          style={{ width: `${(s.value / maxStageValue) * 100}%` }}
+                        />
                       </div>
                     </div>
                   ))}
@@ -433,8 +528,10 @@ function AnalyticsPage() {
                         <span className="text-foreground-muted">{f.value}</span>
                       </div>
                       <div className="mt-1 h-3 rounded-md bg-surface-muted overflow-hidden">
-                        <div className="h-full bg-foreground rounded-md transition-all"
-                          style={{ width: `${(f.value / maxFunnel) * 100}%` }} />
+                        <div
+                          className="h-full bg-foreground rounded-md transition-all"
+                          style={{ width: `${(f.value / maxFunnel) * 100}%` }}
+                        />
                       </div>
                     </div>
                   ))}
@@ -462,7 +559,12 @@ function healthTone(score: number): "positive" | "negative" | "neutral" {
 }
 
 function MetricTile({
-  icon: Icon, label, value, suffix, hint, tone = "neutral",
+  icon: Icon,
+  label,
+  value,
+  suffix,
+  hint,
+  tone = "neutral",
 }: {
   icon: typeof DollarSign;
   label: string;
@@ -509,7 +611,9 @@ function ImpactPill({ impact }: { impact: "high" | "medium" | "low" }) {
     low: "border-border bg-surface text-foreground-subtle",
   } as const;
   return (
-    <span className={`inline-flex items-center rounded-full border px-1.5 py-0.5 text-[10px] font-medium capitalize ${map[impact]}`}>
+    <span
+      className={`inline-flex items-center rounded-full border px-1.5 py-0.5 text-[10px] font-medium capitalize ${map[impact]}`}
+    >
       {impact} impact
     </span>
   );
@@ -535,7 +639,15 @@ function TrendBars({ data }: { data: { month: string; value: number; count: numb
   );
 }
 
-function KPI({ icon: Icon, label, value }: { icon: typeof DollarSign; label: string; value: string }) {
+function KPI({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: typeof DollarSign;
+  label: string;
+  value: string;
+}) {
   return (
     <div className="rounded-xl border border-border bg-surface p-4">
       <div className="flex items-center gap-2 text-[11px] text-foreground-subtle">
@@ -547,7 +659,15 @@ function KPI({ icon: Icon, label, value }: { icon: typeof DollarSign; label: str
   );
 }
 
-function MiniStat({ icon: Icon, label, value }: { icon: typeof DollarSign; label: string; value: number }) {
+function MiniStat({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: typeof DollarSign;
+  label: string;
+  value: number;
+}) {
   return (
     <div className="rounded-lg border border-border bg-surface p-3 flex items-center gap-3">
       <div className="h-8 w-8 rounded-md bg-surface-muted border border-border grid place-items-center">

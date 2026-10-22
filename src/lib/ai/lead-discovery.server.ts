@@ -132,7 +132,9 @@ function containsText(haystack: string, needle: string | null | undefined) {
 
 function extractEmails(text: string) {
   const matches = text.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi) ?? [];
-  return unique(matches.map((m) => m.toLowerCase()).filter((m) => !m.endsWith(".png") && !m.endsWith(".jpg")));
+  return unique(
+    matches.map((m) => m.toLowerCase()).filter((m) => !m.endsWith(".png") && !m.endsWith(".jpg")),
+  );
 }
 
 function extractPhones(text: string) {
@@ -156,7 +158,9 @@ function extractImageUrls(html: string, baseUrl: string) {
     const raw = m[1];
     try {
       urls.add(new URL(raw, baseUrl).toString());
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }
   return Array.from(urls);
 }
@@ -171,7 +175,9 @@ function extractUrls(text: string, baseUrl: string) {
     if (!raw) continue;
     try {
       found.add(new URL(raw, baseUrl).toString());
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }
   const hrefs = Array.from(text.matchAll(/href=["']([^"']+)["']/gi));
   for (const match of hrefs) {
@@ -179,7 +185,9 @@ function extractUrls(text: string, baseUrl: string) {
     if (!raw) continue;
     try {
       found.add(new URL(raw, baseUrl).toString());
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }
   return Array.from(found);
 }
@@ -188,7 +196,8 @@ function pageLabel(url: string): string {
   try {
     const path = new URL(url).pathname.toLowerCase();
     if (path.includes("contact")) return "Website Contact Page";
-    if (path.includes("team") || path.includes("people") || path.includes("leadership")) return "Website Team Page";
+    if (path.includes("team") || path.includes("people") || path.includes("leadership"))
+      return "Website Team Page";
     if (path.includes("about")) return "Website About Page";
     return path === "/" || path === "" ? "Website Footer" : "Website Page";
   } catch {
@@ -214,7 +223,9 @@ function isRelevantContactUrl(url: string, home: URL) {
     const hostMatches = u.hostname.replace(/^www\./, "") === home.hostname.replace(/^www\./, "");
     if (!hostMatches) return false;
     const path = `${u.pathname} ${u.hash}`.toLowerCase();
-    return /contact|about|team|people|leadership|management|founder|company|connect|support/.test(path);
+    return /contact|about|team|people|leadership|management|founder|company|connect|support/.test(
+      path,
+    );
   } catch {
     return false;
   }
@@ -236,7 +247,9 @@ async function fetchHtml(url: string): Promise<string> {
 }
 
 function htmlToText(html: string) {
-  const jsonLd = Array.from(html.matchAll(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi))
+  const jsonLd = Array.from(
+    html.matchAll(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi),
+  )
     .map((m) => m[1])
     .join("\n");
   const footer = Array.from(html.matchAll(/<footer[\s\S]*?<\/footer>/gi)).join("\n");
@@ -248,23 +261,33 @@ function htmlToText(html: string) {
     .replace(/&amp;/g, "&")
     .replace(/\s+/g, " ")
     .trim();
-  return [jsonLd, footer.replace(/<[^>]+>/g, " "), stripped].filter(Boolean).join("\n").slice(0, MAX_PAGE_TEXT);
+  return [jsonLd, footer.replace(/<[^>]+>/g, " "), stripped]
+    .filter(Boolean)
+    .join("\n")
+    .slice(0, MAX_PAGE_TEXT);
 }
 
 function extractJsonLdContacts(html: string, sourceUrl: string): DiscoveredContact[] {
-  const blocks = Array.from(html.matchAll(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi));
+  const blocks = Array.from(
+    html.matchAll(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi),
+  );
   const contacts: DiscoveredContact[] = [];
 
   function visit(node: unknown) {
     if (!node || typeof node !== "object") return;
-    if (Array.isArray(node)) { node.forEach(visit); return; }
+    if (Array.isArray(node)) {
+      node.forEach(visit);
+      return;
+    }
     const obj = node as Record<string, unknown>;
     const type = Array.isArray(obj["@type"]) ? obj["@type"] : [obj["@type"]];
     const types = type.map((t) => String(t).toLowerCase());
     if (types.includes("person")) {
       const name = safeText(obj.name);
       if (name) {
-        const sameAs = Array.isArray(obj.sameAs) ? obj.sameAs.map(safeText) : [safeText(obj.sameAs)];
+        const sameAs = Array.isArray(obj.sameAs)
+          ? obj.sameAs.map(safeText)
+          : [safeText(obj.sameAs)];
         const linkedin = sameAs.find((s) => s.includes("linkedin.com")) ?? null;
         const image = safeText(obj.image) || null;
         contacts.push({
@@ -288,7 +311,11 @@ function extractJsonLdContacts(html: string, sourceUrl: string): DiscoveredConta
   }
 
   for (const block of blocks) {
-    try { visit(JSON.parse(block[1] ?? "{}")); } catch { /* ignore */ }
+    try {
+      visit(JSON.parse(block[1] ?? "{}"));
+    } catch {
+      /* ignore */
+    }
   }
   return contacts;
 }
@@ -298,12 +325,14 @@ function extractJsonLdContacts(html: string, sourceUrl: string): DiscoveredConta
 function inferDepartment(title: string | null | undefined): string | null {
   const t = (title ?? "").toLowerCase();
   if (!t) return null;
-  if (/founder|owner|ceo|coo|president|chief executive|managing director/.test(t)) return "Executive";
+  if (/founder|owner|ceo|coo|president|chief executive|managing director/.test(t))
+    return "Executive";
   if (/cto|cio|engineer|developer|devops|architect|technical/.test(t)) return "Engineering";
   if (/product|pm\b|program manager/.test(t)) return "Product";
   if (/design|ux|ui/.test(t)) return "Design";
   if (/marketing|brand|content|seo|growth|demand/.test(t)) return "Marketing";
-  if (/sales|revenue|account executive|ae\b|bdr|sdr|business development|partnerships/.test(t)) return "Sales";
+  if (/sales|revenue|account executive|ae\b|bdr|sdr|business development|partnerships/.test(t))
+    return "Sales";
   if (/customer success|support|onboarding/.test(t)) return "Customer Success";
   if (/finance|cfo|controller|accounting/.test(t)) return "Finance";
   if (/people|hr\b|human resources|talent|recruit/.test(t)) return "People";
@@ -314,10 +343,16 @@ function inferDepartment(title: string | null | undefined): string | null {
 }
 
 function isGenericEmail(email: string) {
-  return /^(info|hello|contact|sales|support|admin|office|team|enquiries|inquiries|business|careers|press|hr|jobs)@/i.test(email);
+  return /^(info|hello|contact|sales|support|admin|office|team|enquiries|inquiries|business|careers|press|hr|jobs)@/i.test(
+    email,
+  );
 }
 
-function classifyEmail(email: string | null | undefined, verifiedInPage: boolean, companyDomain: string | null): EmailQuality {
+function classifyEmail(
+  email: string | null | undefined,
+  verifiedInPage: boolean,
+  companyDomain: string | null,
+): EmailQuality {
   if (!email) return "unknown";
   const lower = email.toLowerCase();
   const domain = lower.split("@")[1] ?? "";
@@ -340,13 +375,22 @@ function confidenceLabel(score: number): ConfidenceLabel {
 }
 
 function isDecisionMakerTitle(title: string | null | undefined) {
-  return /founder|owner|chief|ceo|cto|cio|cfo|coo|cmo|cro|vp|vice president|director|head|principal|partner|manager|revenue|sales|marketing|growth|business development|talent|recruit|operations|engineering|product/i.test(title ?? "");
+  return /founder|owner|chief|ceo|cto|cio|cfo|coo|cmo|cro|vp|vice president|director|head|principal|partner|manager|revenue|sales|marketing|growth|business development|talent|recruit|operations|engineering|product/i.test(
+    title ?? "",
+  );
 }
 
 // -------- Evidence gathering --------
 
-async function buildEvidencePages(company: CompanyRow, report?: ReportRow | null, addLog?: (message: string) => Promise<void>) {
-  const website = normalizeOptionalUrl(company.website) ?? normalizeOptionalUrl(company.domain) ?? normalizeOptionalUrl(report?.url);
+async function buildEvidencePages(
+  company: CompanyRow,
+  report?: ReportRow | null,
+  addLog?: (message: string) => Promise<void>,
+) {
+  const website =
+    normalizeOptionalUrl(company.website) ??
+    normalizeOptionalUrl(company.domain) ??
+    normalizeOptionalUrl(report?.url);
   if (!website) return [];
   const { url: normalizedUrl, domain } = normalizeCompanyUrl(website);
   const home = new URL(normalizedUrl);
@@ -379,7 +423,10 @@ async function buildEvidencePages(company: CompanyRow, report?: ReportRow | null
   for (const url of Array.from(candidates).slice(0, 12)) {
     await addLog?.(`Checking ${pageLabel(url)}: ${url}`);
     const [scraped, html] = await Promise.all([scrapeUrl(url), fetchHtml(url)]);
-    const text = [scraped?.markdown ?? "", htmlToText(html)].filter(Boolean).join("\n").slice(0, MAX_PAGE_TEXT);
+    const text = [scraped?.markdown ?? "", htmlToText(html)]
+      .filter(Boolean)
+      .join("\n")
+      .slice(0, MAX_PAGE_TEXT);
     const emails = extractEmails(text);
     const phones = extractPhones(text);
     const linkedinUrls = extractLinkedInUrls(text);
@@ -469,7 +516,10 @@ async function searchProfessionalNetwork(
 function parseLinkedInSnippet(title: string, snippet: string, roles: string[]) {
   // LinkedIn title format: "Full Name - Job Title - Company | LinkedIn"
   const cleaned = title.replace(/\s*\|\s*LinkedIn.*$/i, "").trim();
-  const parts = cleaned.split(/\s+[-–—·|]\s+/).map((s) => s.trim()).filter(Boolean);
+  const parts = cleaned
+    .split(/\s+[-–—·|]\s+/)
+    .map((s) => s.trim())
+    .filter(Boolean);
   const full_name = parts[0];
   if (!full_name || full_name.length < 2 || full_name.split(/\s+/).length < 2) return null;
   // Reject obviously non-personal names (all-caps abbrev, contains digits, marketing phrases).
@@ -511,10 +561,18 @@ function fallbackBusinessContacts(pages: EvidencePage[]): DiscoveredContact[] {
   return contacts;
 }
 
-async function extractContactsWithAI(company: CompanyRow, report: ReportRow | null | undefined, pages: EvidencePage[], limit: number) {
+async function extractContactsWithAI(
+  company: CompanyRow,
+  report: ReportRow | null | undefined,
+  pages: EvidencePage[],
+  limit: number,
+) {
   const websitePages = pages.filter((p) => p.label !== "Professional Network");
   const evidence = websitePages
-    .map((p, i) => `SOURCE ${i + 1}: ${p.label}\nURL: ${p.url}\nEmails: ${p.emails.join(", ") || "none"}\nPhones: ${p.phones.join(", ") || "none"}\nLinkedIn URLs: ${p.linkedinUrls.join(", ") || "none"}\nTEXT:\n${p.text.slice(0, 7000)}`)
+    .map(
+      (p, i) =>
+        `SOURCE ${i + 1}: ${p.label}\nURL: ${p.url}\nEmails: ${p.emails.join(", ") || "none"}\nPhones: ${p.phones.join(", ") || "none"}\nLinkedIn URLs: ${p.linkedinUrls.join(", ") || "none"}\nTEXT:\n${p.text.slice(0, 7000)}`,
+    )
     .join("\n\n---\n\n");
   if (!evidence.trim()) return { decision_makers: [], generic_business_contacts: [] };
 
@@ -536,8 +594,15 @@ async function extractContactsWithAI(company: CompanyRow, report: ReportRow | nu
   });
 
   return {
-    decision_makers: (out.decision_makers ?? []).map((c) => ({ ...c, contact_type: "decision_maker" as const })),
-    generic_business_contacts: (out.generic_business_contacts ?? []).map((c) => ({ ...c, contact_type: "business_contact" as const, full_name: "Business Contact" })),
+    decision_makers: (out.decision_makers ?? []).map((c) => ({
+      ...c,
+      contact_type: "decision_maker" as const,
+    })),
+    generic_business_contacts: (out.generic_business_contacts ?? []).map((c) => ({
+      ...c,
+      contact_type: "business_contact" as const,
+      full_name: "Business Contact",
+    })),
   };
 }
 
@@ -551,17 +616,25 @@ function verifyContacts(raw: DiscoveredContact[], pages: EvidencePage[], limit: 
     if (!page) continue;
     const text = page.text;
     const fullName = safeText(contact.full_name);
-    const isBusiness = contact.contact_type === "business_contact" || fullName.toLowerCase() === "business contact";
+    const isBusiness =
+      contact.contact_type === "business_contact" || fullName.toLowerCase() === "business contact";
     if (!isBusiness && (!fullName || !containsText(text, fullName))) continue;
     const email = safeText(contact.email).toLowerCase();
     const phone = safeText(contact.phone);
     const linkedin = safeText(contact.linkedin_url);
     const verifiedEmail = email && containsText(text, email) ? email : null;
     const verifiedPhone = phone && containsText(text, phone) ? phone : null;
-    const verifiedLinkedin = linkedin && (containsText(text, linkedin) || linkedin === contact.source_url) ? linkedin : null;
+    const verifiedLinkedin =
+      linkedin && (containsText(text, linkedin) || linkedin === contact.source_url)
+        ? linkedin
+        : null;
     if (isBusiness && !verifiedEmail && !verifiedPhone) continue;
     const title = safeText(contact.title) || (isBusiness ? "Website Business Contact" : null);
-    const type = isBusiness ? "business_contact" : isDecisionMakerTitle(title) ? "decision_maker" : "business_contact";
+    const type = isBusiness
+      ? "business_contact"
+      : isDecisionMakerTitle(title)
+        ? "decision_maker"
+        : "business_contact";
     const key = `${type}:${verifiedEmail || verifiedLinkedin || fullName.toLowerCase()}:${contact.source_url}`;
     if (seen.has(key)) continue;
     seen.add(key);
@@ -589,7 +662,10 @@ function verifyContacts(raw: DiscoveredContact[], pages: EvidencePage[], limit: 
   for (const c of verified) {
     const key = (c.email || c.linkedin_url || `${c.full_name.toLowerCase()}`).toLowerCase();
     const existing = merged.get(key);
-    if (!existing) { merged.set(key, c); continue; }
+    if (!existing) {
+      merged.set(key, c);
+      continue;
+    }
     // Enrich existing with any missing fields.
     merged.set(key, {
       ...existing,
@@ -626,7 +702,12 @@ async function logActivity(
   });
 }
 
-async function findExistingContact(supabase: DiscoverySupabase, workspaceId: string, companyId: string, contact: DiscoveredContact) {
+async function findExistingContact(
+  supabase: DiscoverySupabase,
+  workspaceId: string,
+  companyId: string,
+  contact: DiscoveredContact,
+) {
   if (contact.email) {
     const { data } = await supabase
       .from("contacts")
@@ -706,8 +787,12 @@ async function persistDiscoveredContact(params: {
 
   if (!contactId) throw new Error(`contact id missing for ${contact.full_name}`);
 
-  const source = contact.contact_type === "business_contact" ? "website_contact_page" : "ai_discovery";
-  const confidence = clampScore(contact.confidence, contact.contact_type === "business_contact" ? 72 : 78);
+  const source =
+    contact.contact_type === "business_contact" ? "website_contact_page" : "ai_discovery";
+  const confidence = clampScore(
+    contact.confidence,
+    contact.contact_type === "business_contact" ? 72 : 78,
+  );
   const emailQuality = classifyEmail(contact.email, !!contact.email, companyDomain);
   const phoneQuality = classifyPhone(contact.phone, !!contact.phone);
   const label = confidenceLabel(confidence);
@@ -754,12 +839,24 @@ async function persistDiscoveredContact(params: {
     contact_id: contactId,
     stage: "new",
     score: confidence,
-    intent_score: contact.contact_type === "decision_maker" ? Math.max(35, confidence - 20) : Math.max(15, confidence - 35),
-    buying_intent: contact.contact_type === "decision_maker" ? Math.max(30, confidence - 25) : Math.max(10, confidence - 45),
-    win_probability: contact.contact_type === "decision_maker" ? Math.max(20, confidence - 35) : Math.max(8, confidence - 55),
+    intent_score:
+      contact.contact_type === "decision_maker"
+        ? Math.max(35, confidence - 20)
+        : Math.max(15, confidence - 35),
+    buying_intent:
+      contact.contact_type === "decision_maker"
+        ? Math.max(30, confidence - 25)
+        : Math.max(10, confidence - 45),
+    win_probability:
+      contact.contact_type === "decision_maker"
+        ? Math.max(20, confidence - 35)
+        : Math.max(8, confidence - 55),
     temperature: contact.contact_type === "decision_maker" ? "warm" : "cold",
     priority: contact.contact_type === "decision_maker" ? "medium" : "low",
-    next_action: contact.contact_type === "decision_maker" ? "Generate personalized outreach from verified website context." : "Confirm the right buyer through enrichment before outreach.",
+    next_action:
+      contact.contact_type === "decision_maker"
+        ? "Generate personalized outreach from verified website context."
+        : "Confirm the right buyer through enrichment before outreach.",
     source,
     owner_id: userId,
     ai_insight: insight as never,
@@ -803,20 +900,30 @@ export async function runLeadDiscoveryPipeline(params: {
   let updated = 0;
   let skipped = 0;
 
-  const companyDomain = (company.domain ?? (company.website ? normalizeCompanyUrl(company.website).domain : null))?.toLowerCase() ?? null;
+  const companyDomain =
+    (
+      company.domain ?? (company.website ? normalizeCompanyUrl(company.website).domain : null)
+    )?.toLowerCase() ?? null;
 
   async function step(offset: number, message: string, metadata: Record<string, unknown> = {}) {
     logs.push(message);
     await params.tick?.(Math.min(99, Math.round(start + span * offset)), message);
-    await logActivity(supabase, workspaceId, company.id, "lead_discovery.step", { message, ...metadata }).catch(() => undefined);
+    await logActivity(supabase, workspaceId, company.id, "lead_discovery.step", {
+      message,
+      ...metadata,
+    }).catch(() => undefined);
   }
 
   await step(0.02, "Searching public business sources…");
   const pages = await buildEvidencePages(company, report, async (message) => {
     logs.push(message);
-    await logActivity(supabase, workspaceId, company.id, "lead_discovery.step", { message }).catch(() => undefined);
+    await logActivity(supabase, workspaceId, company.id, "lead_discovery.step", { message }).catch(
+      () => undefined,
+    );
   });
-  await step(0.25, `Checked ${pages.length} website source${pages.length === 1 ? "" : "s"}.`, { pages: pages.map((p) => p.url) });
+  await step(0.25, `Checked ${pages.length} website source${pages.length === 1 ? "" : "s"}.`, {
+    pages: pages.map((p) => p.url),
+  });
 
   await step(0.35, "Finding decision makers…");
   let linkedinContacts: DiscoveredContact[] = [];
@@ -824,15 +931,22 @@ export async function runLeadDiscoveryPipeline(params: {
   try {
     const network = await searchProfessionalNetwork(company, async (message) => {
       logs.push(message);
-      await logActivity(supabase, workspaceId, company.id, "lead_discovery.step", { message }).catch(() => undefined);
+      await logActivity(supabase, workspaceId, company.id, "lead_discovery.step", {
+        message,
+      }).catch(() => undefined);
     });
     linkedinContacts = network.contacts;
     linkedinPages = network.pages;
-    await step(0.5, `Found ${linkedinContacts.length} decision maker candidate${linkedinContacts.length === 1 ? "" : "s"} on public professional network.`);
+    await step(
+      0.5,
+      `Found ${linkedinContacts.length} decision maker candidate${linkedinContacts.length === 1 ? "" : "s"} on public professional network.`,
+    );
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     errors.push(`professional network: ${message}`);
-    await step(0.5, "Professional network search unavailable; continuing with website evidence.", { error: message });
+    await step(0.5, "Professional network search unavailable; continuing with website evidence.", {
+      error: message,
+    });
   }
 
   let aiContacts: DiscoveredContact[] = [];
@@ -843,13 +957,19 @@ export async function runLeadDiscoveryPipeline(params: {
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     errors.push(`ai extraction: ${message}`);
-    await step(0.6, "AI extraction failed; using deterministic website extraction only.", { error: message });
+    await step(0.6, "AI extraction failed; using deterministic website extraction only.", {
+      error: message,
+    });
   }
 
   const fallback = fallbackBusinessContacts(pages);
   const allPages = [...pages, ...linkedinPages];
   await step(0.72, "Verifying contact quality…");
-  const verified = verifyContacts([...linkedinContacts, ...aiContacts, ...fallback], allPages, limit);
+  const verified = verifyContacts(
+    [...linkedinContacts, ...aiContacts, ...fallback],
+    allPages,
+    limit,
+  );
 
   await step(0.8, `Saving leads (${verified.length})…`, {
     decision_makers: verified.filter((c) => c.contact_type === "decision_maker").length,
@@ -860,20 +980,32 @@ export async function runLeadDiscoveryPipeline(params: {
     const contact = verified[i];
     try {
       const outcome = await persistDiscoveredContact({
-        supabase, workspaceId, companyId: company.id, companyDomain,
-        userId, reportId: report?.id ?? null, contact,
+        supabase,
+        workspaceId,
+        companyId: company.id,
+        companyDomain,
+        userId,
+        reportId: report?.id ?? null,
+        contact,
       });
       if (outcome === "created") created += 1;
       else updated += 1;
-      await step(0.82 + ((i + 1) / Math.max(1, verified.length)) * 0.15, `${outcome === "created" ? "Created" : "Updated"} lead: ${contact.full_name}.`, {
-        contact_type: contact.contact_type,
-        source_url: contact.source_url,
-      });
+      await step(
+        0.82 + ((i + 1) / Math.max(1, verified.length)) * 0.15,
+        `${outcome === "created" ? "Created" : "Updated"} lead: ${contact.full_name}.`,
+        {
+          contact_type: contact.contact_type,
+          source_url: contact.source_url,
+        },
+      );
     } catch (error) {
       skipped += 1;
       const message = error instanceof Error ? error.message : String(error);
       errors.push(message);
-      await step(0.82 + ((i + 1) / Math.max(1, verified.length)) * 0.15, `Failed to save ${contact.full_name}: ${message}`);
+      await step(
+        0.82 + ((i + 1) / Math.max(1, verified.length)) * 0.15,
+        `Failed to save ${contact.full_name}: ${message}`,
+      );
     }
   }
 

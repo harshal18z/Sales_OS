@@ -87,23 +87,41 @@ async function logGmailActivity(
 }
 
 function emailAddresses(...values: Array<string | undefined>): string[] {
-  return [...new Set(values.flatMap((value) =>
-    (value ?? "").match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi) ?? [],
-  ).map((address) => address.toLowerCase()))];
+  return [
+    ...new Set(
+      values
+        .flatMap((value) => (value ?? "").match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi) ?? [])
+        .map((address) => address.toLowerCase()),
+    ),
+  ];
 }
 
-async function assertNotSuppressed(context: { supabase: any; userId: string }, ...recipients: Array<string | undefined>) {
+async function assertNotSuppressed(
+  context: { supabase: any; userId: string },
+  ...recipients: Array<string | undefined>
+) {
   const addresses = emailAddresses(...recipients);
   if (!addresses.length) throw new Error("Add at least one valid recipient email address.");
   const { data: member, error: memberError } = await context.supabase
-    .from("workspace_members").select("workspace_id").eq("user_id", context.userId).limit(1).maybeSingle();
+    .from("workspace_members")
+    .select("workspace_id")
+    .eq("user_id", context.userId)
+    .limit(1)
+    .maybeSingle();
   if (memberError) throw memberError;
   if (!member?.workspace_id) throw new Error("Your account is not connected to a workspace.");
-  const { data, error } = await context.supabase.from("email_suppressions")
-    .select("email").eq("workspace_id", member.workspace_id).in("email", addresses);
-  if (error) throw new Error("Could not verify the workspace suppression list; sending was stopped.");
+  const { data, error } = await context.supabase
+    .from("email_suppressions")
+    .select("email")
+    .eq("workspace_id", member.workspace_id)
+    .in("email", addresses);
+  if (error)
+    throw new Error("Could not verify the workspace suppression list; sending was stopped.");
   const blocked = (data ?? []).map((row: { email: string }) => row.email);
-  if (blocked.length) throw new Error(`Sending stopped: ${blocked.join(", ")} is on this workspace's suppression list.`);
+  if (blocked.length)
+    throw new Error(
+      `Sending stopped: ${blocked.join(", ")} is on this workspace's suppression list.`,
+    );
 }
 
 // ---------- header helpers ----------
@@ -387,7 +405,10 @@ export const gmailScheduleSend = createServerFn({ method: "POST" })
     }) => input,
   )
   .handler(async ({ data, context }) => {
-    if (!Number.isFinite(Date.parse(data.scheduledAt)) || Date.parse(data.scheduledAt) <= Date.now()) {
+    if (
+      !Number.isFinite(Date.parse(data.scheduledAt)) ||
+      Date.parse(data.scheduledAt) <= Date.now()
+    ) {
       throw new Error("Choose a future scheduled send time.");
     }
     await assertNotSuppressed(context, data.to, data.cc, data.bcc);
@@ -406,18 +427,24 @@ export const gmailScheduleSend = createServerFn({ method: "POST" })
       .limit(1)
       .maybeSingle();
     if (!member?.workspace_id) {
-      await gmailFetch(key, `/users/me/drafts/${draft.id}`, { method: "DELETE" }).catch(() => undefined);
+      await gmailFetch(key, `/users/me/drafts/${draft.id}`, { method: "DELETE" }).catch(
+        () => undefined,
+      );
       throw new Error("Your account is not connected to a workspace.");
     }
-    const { error: queueError } = await (context.supabase as any).from("scheduled_email_jobs").insert({
-      workspace_id: member.workspace_id,
-      user_id: context.userId,
-      gmail_draft_id: draft.id,
-      recipients: emailAddresses(data.to, data.cc, data.bcc),
-      scheduled_at: data.scheduledAt,
-    });
+    const { error: queueError } = await (context.supabase as any)
+      .from("scheduled_email_jobs")
+      .insert({
+        workspace_id: member.workspace_id,
+        user_id: context.userId,
+        gmail_draft_id: draft.id,
+        recipients: emailAddresses(data.to, data.cc, data.bcc),
+        scheduled_at: data.scheduledAt,
+      });
     if (queueError) {
-      await gmailFetch(key, `/users/me/drafts/${draft.id}`, { method: "DELETE" }).catch(() => undefined);
+      await gmailFetch(key, `/users/me/drafts/${draft.id}`, { method: "DELETE" }).catch(
+        () => undefined,
+      );
       throw queueError;
     }
     await logGmailActivity(context, "gmail.scheduled", {
@@ -433,7 +460,10 @@ export const gmailTrackReplies = createServerFn({ method: "POST" })
   .inputValidator((input: { threadId: string; since?: string }) => input)
   .handler(async ({ data, context }) => {
     const key = await getKey(context.userId);
-    const thread = (await gmailFetch(key, `/users/me/threads/${data.threadId}?format=metadata`)) as {
+    const thread = (await gmailFetch(
+      key,
+      `/users/me/threads/${data.threadId}?format=metadata`,
+    )) as {
       messages?: Array<{
         id: string;
         internalDate?: string;

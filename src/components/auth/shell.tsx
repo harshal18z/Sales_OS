@@ -3,7 +3,6 @@ import { ArrowLeft, Check, Sparkles } from "lucide-react";
 import type { ReactNode } from "react";
 import { getPrimaryTestimonial } from "@/config/testimonials";
 
-
 /* ---------- Shared UI primitives (same tokens as the design system) ---------- */
 
 export function Button({
@@ -118,7 +117,6 @@ export function Input({
   );
 }
 
-
 export function Divider({ children }: { children?: ReactNode }) {
   if (!children) return <div className="hairline my-6" />;
   return (
@@ -165,7 +163,6 @@ export function AuthShell({
             </Link>
           </div>
         </footer>
-
       </aside>
 
       {/* Right — form panel */}
@@ -220,15 +217,7 @@ function BrandMark({ small }: { small?: boolean }) {
   );
 }
 
-function StepDots({
-  current,
-  total,
-  label,
-}: {
-  current: number;
-  total: number;
-  label?: string;
-}) {
+function StepDots({ current, total, label }: { current: number; total: number; label?: string }) {
   return (
     <div className="flex items-center gap-3">
       {label && (
@@ -244,11 +233,7 @@ function StepDots({
             <span
               key={i}
               className={`h-1 rounded-full transition-all duration-300 ${
-                active
-                  ? "w-6 bg-foreground"
-                  : done
-                    ? "w-1.5 bg-foreground/60"
-                    : "w-1.5 bg-border"
+                active ? "w-6 bg-foreground" : done ? "w-1.5 bg-foreground/60" : "w-1.5 bg-border"
               }`}
             />
           );
@@ -301,9 +286,7 @@ function QuietRail() {
                 )}
               </div>
               <span
-                className={
-                  i === copy.stream.length - 1 ? "ai-shimmer" : "text-foreground-muted"
-                }
+                className={i === copy.stream.length - 1 ? "ai-shimmer" : "text-foreground-muted"}
               >
                 {s}
               </span>
@@ -323,7 +306,6 @@ function QuietRail() {
           {testimonial.name} · {testimonial.role}
         </span>
       </div>
-
     </div>
   );
 }
@@ -372,10 +354,6 @@ function railCopy(pathname: string) {
     tag: "Welcome back",
     title: "The operating system for sales.",
     body: "A calm workspace for lead generation, research, outreach, meetings, and pipeline — powered by AI that works in the background.",
-    stream: [
-      "Restoring your workspace",
-      "Syncing 12 conversations",
-      "Refreshing pipeline signals",
-    ],
+    stream: ["Restoring your workspace", "Syncing 12 conversations", "Refreshing pipeline signals"],
   };
 }

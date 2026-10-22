@@ -25,7 +25,11 @@ export default defineTool({
     }
     const supabase = supabaseForUser(ctx);
     const userId = ctx.getUserId();
-    const baseSlug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "ws";
+    const baseSlug =
+      name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)/g, "") || "ws";
     const slug = `${baseSlug}-${Math.random().toString(36).slice(2, 6)}`;
     const { data: ws, error } = await supabase
       .from("workspaces")
@@ -33,7 +37,10 @@ export default defineTool({
       .select("id, name, slug")
       .single();
     if (error || !ws) {
-      return { content: [{ type: "text", text: error?.message ?? "Failed to create" }], isError: true };
+      return {
+        content: [{ type: "text", text: error?.message ?? "Failed to create" }],
+        isError: true,
+      };
     }
     const { error: mErr } = await supabase
       .from("workspace_members")
