@@ -1,7 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { defineTool, type ToolContext } from "@lovable.dev/mcp-js";
 
-
 function supabaseForUser(ctx: ToolContext) {
   return createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_PUBLISHABLE_KEY!, {
     global: { headers: { Authorization: `Bearer ${ctx.getToken()}` } },
@@ -26,7 +25,10 @@ export default defineTool({
     if (mErr) return { content: [{ type: "text", text: mErr.message }], isError: true };
     const ids = (memberships ?? []).map((m: { workspace_id: string }) => m.workspace_id);
     if (ids.length === 0) {
-      return { content: [{ type: "text", text: "No workspaces yet." }], structuredContent: { workspaces: [] } };
+      return {
+        content: [{ type: "text", text: "No workspaces yet." }],
+        structuredContent: { workspaces: [] },
+      };
     }
     const { data: workspaces, error } = await supabase
       .from("workspaces")

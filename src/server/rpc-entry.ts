@@ -3,7 +3,10 @@ import * as calendar from "@/server/functions/calendar";
 import * as gmail from "@/server/functions/gmail";
 import * as oauth from "@/server/functions/oauth";
 import * as demo from "@/server/functions/demo";
-import { createServerRequestContext, runWithServerRequestContext } from "@/server/server-fn.runtime";
+import {
+  createServerRequestContext,
+  runWithServerRequestContext,
+} from "@/server/server-fn.runtime";
 import { Route as askRoute } from "@/routes/api/ai/ask";
 import { Route as copilotRoute } from "@/routes/api/ai/copilot-plan";
 import { simulatePlanChange } from "@/server/billing";
@@ -47,7 +50,11 @@ const actions: Record<string, (payload?: { data?: unknown }) => Promise<unknown>
   generateDemo: demo.generateDemo,
 };
 
-export async function dispatchRPC(name: string, payload: { data?: unknown }, accessToken: string): Promise<unknown> {
+export async function dispatchRPC(
+  name: string,
+  payload: { data?: unknown },
+  accessToken: string,
+): Promise<unknown> {
   const action = actions[name];
   if (!action) throw new Error("Unknown API operation.");
   const context = await createServerRequestContext(accessToken);

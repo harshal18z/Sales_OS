@@ -41,11 +41,13 @@ export const Route = createFileRoute("/_shell/integrations")({
 const CRM_META: Record<CRMProvider, { name: string; description: string }> = {
   hubspot: {
     name: "HubSpot",
-    description: "Sync companies, contacts, deals, and activities every 5 minutes with two-way sync.",
+    description:
+      "Sync companies, contacts, deals, and activities every 5 minutes with two-way sync.",
   },
   salesforce: {
     name: "Salesforce",
-    description: "Sync accounts, contacts, opportunities, and tasks bidirectionally with conflict detection.",
+    description:
+      "Sync accounts, contacts, opportunities, and tasks bidirectionally with conflict detection.",
   },
   pipedrive: {
     name: "Pipedrive",
@@ -103,7 +105,10 @@ function IntegrationsPage() {
       await upsertCRM.mutateAsync({
         provider,
         status: "pending",
-        config: { last_error: "OAuth setup required. A workspace admin must configure the CRM connector before syncing can begin." },
+        config: {
+          last_error:
+            "OAuth setup required. A workspace admin must configure the CRM connector before syncing can begin.",
+        },
       });
       toast.message(`${CRM_META[provider].name} setup required`, {
         description:
@@ -117,7 +122,11 @@ function IntegrationsPage() {
   async function handleCRMDisconnect(provider: CRMProvider) {
     if (!confirm(`Disconnect ${CRM_META[provider].name}?`)) return;
     try {
-      await upsertCRM.mutateAsync({ provider, status: "disconnected", config: { last_error: null } });
+      await upsertCRM.mutateAsync({
+        provider,
+        status: "disconnected",
+        config: { last_error: null },
+      });
       toast.success("Disconnected");
     } catch (e) {
       toast.error((e as Error).message);
@@ -188,8 +197,8 @@ function IntegrationsPage() {
             <div className="mt-3 rounded-lg border border-border bg-surface-muted/40 p-3 flex items-start gap-2">
               <AlertCircle className="h-4 w-4 text-foreground-muted mt-0.5 shrink-0" />
               <p className="text-[12.5px] text-foreground-muted leading-relaxed">
-                No CRM connected. SalesOS runs on your workspace data — import via CSV or add records
-                manually below. You can connect a CRM anytime.
+                No CRM connected. SalesOS runs on your workspace data — import via CSV or add
+                records manually below. You can connect a CRM anytime.
               </p>
             </div>
           )}
@@ -322,7 +331,9 @@ function CRMCard({
             </span>
           )}
         </div>
-        <p className="text-[12.5px] text-foreground-muted mt-1 leading-relaxed">{meta.description}</p>
+        <p className="text-[12.5px] text-foreground-muted mt-1 leading-relaxed">
+          {meta.description}
+        </p>
         {err && row.status !== "connected" && (
           <p className="text-[11.5px] text-foreground-subtle mt-1.5 leading-relaxed">{err}</p>
         )}

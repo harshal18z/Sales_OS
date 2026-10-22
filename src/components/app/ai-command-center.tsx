@@ -30,10 +30,7 @@ const EXAMPLES = [
   "Which customers haven't replied?",
 ];
 
-const KIND_META: Record<
-  AskCitation["kind"],
-  { label: string; icon: typeof Users }
-> = {
+const KIND_META: Record<AskCitation["kind"], { label: string; icon: typeof Users }> = {
   lead: { label: "Lead", icon: Users },
   company: { label: "Company", icon: Building2 },
   deal: { label: "Deal", icon: Briefcase },
@@ -74,10 +71,7 @@ function renderAnswer(text: string): React.ReactNode {
     flushList();
     if (line.trim() === "") continue;
     nodes.push(
-      <p
-        key={`p-${nodes.length}`}
-        className="text-[13.5px] text-foreground leading-relaxed my-2"
-      >
+      <p key={`p-${nodes.length}`} className="text-[13.5px] text-foreground leading-relaxed my-2">
         {renderInline(line)}
       </p>,
     );
@@ -88,7 +82,10 @@ function renderAnswer(text: string): React.ReactNode {
 
 function renderInline(text: string): React.ReactNode {
   // Strip inline citation markers like [lead:uuid] — shown separately.
-  const cleaned = text.replace(/\[(lead|deal|company|email|meeting|research|campaign|revenue):[a-f0-9-]+\]/gi, "");
+  const cleaned = text.replace(
+    /\[(lead|deal|company|email|meeting|research|campaign|revenue):[a-f0-9-]+\]/gi,
+    "",
+  );
   const parts = cleaned.split(/(\*\*[^*]+\*\*)/g);
   return parts.map((p, i) =>
     p.startsWith("**") && p.endsWith("**") ? (
@@ -111,16 +108,7 @@ export function AICommandCenter({
   initialQuery?: string;
 }) {
   const { workspaceId } = useWorkspace();
-  const {
-    ask,
-    answer,
-    stage,
-    citations,
-    streaming,
-    error,
-    cached,
-    reset,
-  } = useAIAsk(workspaceId);
+  const { ask, answer, stage, citations, streaming, error, cached, reset } = useAIAsk(workspaceId);
   const [q, setQ] = useState("");
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -156,9 +144,7 @@ export function AICommandCenter({
           <div className="h-6 w-6 rounded bg-foreground text-background grid place-items-center">
             <Sparkles className="h-3.5 w-3.5" />
           </div>
-          <div className="text-[13.5px] font-semibold flex-1">
-            AI Command Center
-          </div>
+          <div className="text-[13.5px] font-semibold flex-1">AI Command Center</div>
           {cached && (
             <span className="text-[11px] text-foreground-muted px-1.5 py-0.5 rounded border border-border">
               cached
@@ -197,10 +183,7 @@ export function AICommandCenter({
           </div>
         </div>
 
-        <div
-          ref={scrollRef}
-          className="max-h-[60vh] overflow-y-auto px-4 py-3"
-        >
+        <div ref={scrollRef} className="max-h-[60vh] overflow-y-auto px-4 py-3">
           {!hasResult && (
             <div>
               <div className="text-caption mb-2">Try asking</div>
@@ -237,11 +220,7 @@ export function AICommandCenter({
             </div>
           )}
 
-          {error && (
-            <div className="mt-3 text-[13px] text-destructive">
-              {error}
-            </div>
-          )}
+          {error && <div className="mt-3 text-[13px] text-destructive">{error}</div>}
 
           {citations.length > 0 && (
             <div className="mt-4">
@@ -264,11 +243,7 @@ export function AICommandCenter({
                     </span>
                   );
                   return c.href ? (
-                    <Link
-                      key={`${c.kind}-${c.id}`}
-                      to={c.href}
-                      onClick={() => onOpenChange(false)}
-                    >
+                    <Link key={`${c.kind}-${c.id}`} to={c.href} onClick={() => onOpenChange(false)}>
                       {body}
                     </Link>
                   ) : (

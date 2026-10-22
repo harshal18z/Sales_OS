@@ -1,8 +1,26 @@
 import { createFileRoute } from "@/lib/router-compat";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { CheckCircle2, Clock, Mail, Plus, Send, Trash2, X, Inbox, Sparkles, Loader2 } from "lucide-react";
-import { useDeleteRow, useEmails, useInsertRow, useLeads, useUpdateRow, useCompanies } from "@/hooks/use-data";
+import {
+  CheckCircle2,
+  Clock,
+  Mail,
+  Plus,
+  Send,
+  Trash2,
+  X,
+  Inbox,
+  Sparkles,
+  Loader2,
+} from "lucide-react";
+import {
+  useDeleteRow,
+  useEmails,
+  useInsertRow,
+  useLeads,
+  useUpdateRow,
+  useCompanies,
+} from "@/hooks/use-data";
 import { useAIEmail, type AIEmailType } from "@/hooks/use-ai";
 import {
   useGoogleStatus,
@@ -14,8 +32,16 @@ import {
   useGmailReply,
 } from "@/hooks/use-google";
 import {
-  EmptyState, Field, GhostBtn, Modal, PageHeader, PrimaryBtn, Select,
-  SkeletonList, TextArea, TextInput,
+  EmptyState,
+  Field,
+  GhostBtn,
+  Modal,
+  PageHeader,
+  PrimaryBtn,
+  Select,
+  SkeletonList,
+  TextArea,
+  TextInput,
 } from "@/components/app/data-ui";
 
 export const Route = createFileRoute("/_shell/emails")({
@@ -53,30 +79,30 @@ function EmailsPage() {
 
   const isGmail = folder.startsWith("gmail:");
   const gmailQuery = GMAIL_FOLDERS.find((f) => f.id === folder)?.query;
-  const gmailList = useGmailMessages(
-    { query: gmailQuery, max: 25 },
-    isGmail && !!gstatus?.gmail,
-  );
+  const gmailList = useGmailMessages({ query: gmailQuery, max: 25 }, isGmail && !!gstatus?.gmail);
   const gmailMsg = useGmailMessage(isGmail ? selectedId : null, isGmail);
 
   const counts = useMemo(() => {
     const c: Record<string, number> = {};
-    (emails as any[]).forEach((e) => { c[e.status] = (c[e.status] ?? 0) + 1; });
+    (emails as any[]).forEach((e) => {
+      c[e.status] = (c[e.status] ?? 0) + 1;
+    });
     return c;
   }, [emails]);
 
   const filtered = (emails as any[]).filter((e) => e.status === folder);
   const selected = isGmail
     ? null
-    : filtered.find((e) => e.id === selectedId) ?? filtered[0] ?? null;
+    : (filtered.find((e) => e.id === selectedId) ?? filtered[0] ?? null);
   const gmailMessages = (gmailList.data as any)?.messages ?? [];
-
 
   async function setStatus(id: string, status: string, extra: Record<string, unknown> = {}) {
     try {
       await update.mutateAsync({ id, values: { status, ...extra } });
       toast.success(status);
-    } catch (e) { toast.error((e as Error).message); }
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
   }
 
   async function handleDelete(id: string) {
@@ -84,7 +110,9 @@ function EmailsPage() {
     try {
       await del.mutateAsync(id);
       toast.success("Deleted");
-    } catch (e) { toast.error((e as Error).message); }
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
   }
 
   return (
@@ -111,7 +139,10 @@ function EmailsPage() {
             {STATUSES.map((s) => (
               <button
                 key={s}
-                onClick={() => { setFolder(s); setSelectedId(null); }}
+                onClick={() => {
+                  setFolder(s);
+                  setSelectedId(null);
+                }}
                 className={`w-full text-left px-3 py-2 rounded-md text-[12.5px] flex items-center justify-between transition ${
                   folder === s
                     ? "bg-surface border border-border text-foreground"
@@ -124,11 +155,16 @@ function EmailsPage() {
             ))}
             {gstatus?.gmail && (
               <>
-                <div className="mt-3 mb-1 px-3 text-[10px] uppercase tracking-wider text-foreground-subtle">Gmail</div>
+                <div className="mt-3 mb-1 px-3 text-[10px] uppercase tracking-wider text-foreground-subtle">
+                  Gmail
+                </div>
                 {GMAIL_FOLDERS.map((g) => (
                   <button
                     key={g.id}
-                    onClick={() => { setFolder(g.id); setSelectedId(null); }}
+                    onClick={() => {
+                      setFolder(g.id);
+                      setSelectedId(null);
+                    }}
                     className={`w-full text-left px-3 py-2 rounded-md text-[12.5px] flex items-center gap-2 transition ${
                       folder === g.id
                         ? "bg-surface border border-border text-foreground"
@@ -144,7 +180,6 @@ function EmailsPage() {
           </div>
         </aside>
 
-
         {/* List */}
         <div className="col-span-12 lg:col-span-4 border-r border-border">
           <div className="p-4">
@@ -152,7 +187,11 @@ function EmailsPage() {
               gmailList.isLoading ? (
                 <SkeletonList count={5} />
               ) : gmailMessages.length === 0 ? (
-                <EmptyState icon={Mail} title="No Gmail messages" description="Nothing in this folder." />
+                <EmptyState
+                  icon={Mail}
+                  title="No Gmail messages"
+                  description="Nothing in this folder."
+                />
               ) : (
                 <div className="space-y-1.5">
                   {gmailMessages.map((m: any) => {
@@ -165,12 +204,15 @@ function EmailsPage() {
                           if (m.unread) markRead.mutate({ id: m.id, read: true });
                         }}
                         className={`w-full text-left rounded-lg border p-3 transition ${
-                          active ? "border-border-strong bg-surface"
-                                 : "border-border bg-surface hover:border-border-strong"
+                          active
+                            ? "border-border-strong bg-surface"
+                            : "border-border bg-surface hover:border-border-strong"
                         }`}
                       >
                         <div className="flex items-center gap-2">
-                          <p className={`text-[13px] truncate flex-1 ${m.unread ? "font-semibold text-foreground" : "font-medium text-foreground"}`}>
+                          <p
+                            className={`text-[13px] truncate flex-1 ${m.unread ? "font-semibold text-foreground" : "font-medium text-foreground"}`}
+                          >
                             {m.subject || "(no subject)"}
                           </p>
                           <span className="text-[10px] uppercase tracking-wider text-foreground-subtle">
@@ -228,7 +270,9 @@ function EmailsPage() {
           <div className="p-6">
             {isGmail ? (
               !selectedId ? (
-                <div className="text-[12px] text-foreground-subtle">Select a message to preview.</div>
+                <div className="text-[12px] text-foreground-subtle">
+                  Select a message to preview.
+                </div>
               ) : gmailMsg.isLoading || !gmailMsg.data ? (
                 <SkeletonList count={4} />
               ) : (
@@ -242,7 +286,9 @@ function EmailsPage() {
                       await gmailReply.mutateAsync({ messageId: selectedId!, body: replyBody });
                       toast.success("Reply sent");
                       setReplyBody("");
-                    } catch (e) { toast.error((e as Error).message); }
+                    } catch (e) {
+                      toast.error((e as Error).message);
+                    }
                   }}
                   onTrash={async () => {
                     if (!confirm("Move to trash?")) return;
@@ -250,7 +296,9 @@ function EmailsPage() {
                       await gmailTrash.mutateAsync({ id: selectedId! });
                       toast.success("Trashed");
                       setSelectedId(null);
-                    } catch (e) { toast.error((e as Error).message); }
+                    } catch (e) {
+                      toast.error((e as Error).message);
+                    }
                   }}
                   replying={gmailReply.isPending}
                 />
@@ -260,7 +308,9 @@ function EmailsPage() {
             ) : (
               <div className="space-y-4">
                 <div>
-                  <p className="text-[11px] uppercase tracking-wider text-foreground-subtle">Subject</p>
+                  <p className="text-[11px] uppercase tracking-wider text-foreground-subtle">
+                    Subject
+                  </p>
                   <h2 className="text-[16px] font-semibold text-foreground mt-1">
                     {selected.subject || "(no subject)"}
                   </h2>
@@ -274,7 +324,10 @@ function EmailsPage() {
 
                 <div className="grid grid-cols-3 gap-3">
                   <Meta label="Tone" value={selected.tone ?? "—"} />
-                  <Meta label="Personalization" value={String(selected.personalization_score ?? 0)} />
+                  <Meta
+                    label="Personalization"
+                    value={String(selected.personalization_score ?? 0)}
+                  />
                   <Meta label="Spam risk" value={String(selected.spam_risk ?? 0)} />
                 </div>
 
@@ -295,17 +348,25 @@ function EmailsPage() {
                     </GhostBtn>
                   )}
                   {selected.status === "approved" && gstatus?.gmail && (
-                    <GhostBtn onClick={async () => {
-                      try {
-                        // parse "To: <email>" from body or use a fallback: skip if no recipient
-                        toast.info("Use Compose → Gmail to send new messages.");
-                      } catch (e) { toast.error((e as Error).message); }
-                    }}>
+                    <GhostBtn
+                      onClick={async () => {
+                        try {
+                          // parse "To: <email>" from body or use a fallback: skip if no recipient
+                          toast.info("Use Compose → Gmail to send new messages.");
+                        } catch (e) {
+                          toast.error((e as Error).message);
+                        }
+                      }}
+                    >
                       <Send className="h-3.5 w-3.5" /> Send via Gmail
                     </GhostBtn>
                   )}
                   {selected.status === "approved" && (
-                    <GhostBtn onClick={() => setStatus(selected.id, "sent", { sent_at: new Date().toISOString() })}>
+                    <GhostBtn
+                      onClick={() =>
+                        setStatus(selected.id, "sent", { sent_at: new Date().toISOString() })
+                      }
+                    >
                       <Send className="h-3.5 w-3.5" /> Mark sent
                     </GhostBtn>
                   )}
@@ -317,7 +378,6 @@ function EmailsPage() {
             )}
           </div>
         </div>
-
       </div>
 
       <EmailForm
@@ -329,7 +389,9 @@ function EmailsPage() {
             await insert.mutateAsync(v);
             toast.success("Draft created");
             setCreating(false);
-          } catch (e) { toast.error((e as Error).message); }
+          } catch (e) {
+            toast.error((e as Error).message);
+          }
         }}
       />
 
@@ -344,11 +406,7 @@ function EmailsPage() {
         }}
       />
 
-      <Modal
-        open={!!scheduling}
-        onClose={() => setScheduling(null)}
-        title="Schedule email"
-      >
+      <Modal open={!!scheduling} onClose={() => setScheduling(null)} title="Schedule email">
         {scheduling && (
           <ScheduleForm
             onClose={() => setScheduling(null)}
@@ -373,9 +431,21 @@ function Meta({ label, value }: { label: string; value: string }) {
 }
 
 function GmailPreview({
-  msg, replyBody, onReplyBodyChange, onReply, onTrash, replying,
+  msg,
+  replyBody,
+  onReplyBodyChange,
+  onReply,
+  onTrash,
+  replying,
 }: {
-  msg: { subject?: string; from?: string; to?: string; date?: string; body?: string; snippet?: string };
+  msg: {
+    subject?: string;
+    from?: string;
+    to?: string;
+    date?: string;
+    body?: string;
+    snippet?: string;
+  };
   replyBody: string;
   onReplyBodyChange: (v: string) => void;
   onReply: () => void;
@@ -386,7 +456,9 @@ function GmailPreview({
     <div className="space-y-4">
       <div>
         <p className="text-[11px] uppercase tracking-wider text-foreground-subtle">Subject</p>
-        <h2 className="text-[16px] font-semibold text-foreground mt-1">{msg.subject || "(no subject)"}</h2>
+        <h2 className="text-[16px] font-semibold text-foreground mt-1">
+          {msg.subject || "(no subject)"}
+        </h2>
         <p className="text-[11.5px] text-foreground-subtle mt-1">
           From {msg.from || "—"} · {msg.date ? new Date(msg.date).toLocaleString() : ""}
         </p>
@@ -398,9 +470,16 @@ function GmailPreview({
       </div>
       <div className="rounded-xl border border-border bg-surface p-4 space-y-2">
         <p className="text-[11px] uppercase tracking-wider text-foreground-subtle">Reply</p>
-        <TextArea rows={4} value={replyBody} onChange={(e) => onReplyBodyChange(e.target.value)} placeholder="Write a reply…" />
+        <TextArea
+          rows={4}
+          value={replyBody}
+          onChange={(e) => onReplyBodyChange(e.target.value)}
+          placeholder="Write a reply…"
+        />
         <div className="flex justify-end gap-2">
-          <GhostBtn onClick={onTrash}><Trash2 className="h-3.5 w-3.5" /> Trash</GhostBtn>
+          <GhostBtn onClick={onTrash}>
+            <Trash2 className="h-3.5 w-3.5" /> Trash
+          </GhostBtn>
           <PrimaryBtn onClick={onReply} disabled={replying || !replyBody.trim()}>
             <Send className="h-3.5 w-3.5" /> {replying ? "Sending…" : "Send reply"}
           </PrimaryBtn>
@@ -409,7 +488,6 @@ function GmailPreview({
     </div>
   );
 }
-
 
 function EmailForm({
   open,
@@ -444,35 +522,58 @@ function EmailForm({
             spam_risk: 0,
           });
           setSubmitting(false);
-          setSubject(""); setBody(""); setTone("direct"); setLead("");
+          setSubject("");
+          setBody("");
+          setTone("direct");
+          setLead("");
         }}
         className="space-y-3"
       >
-        <Field label="Subject"><TextInput required value={subject} onChange={(e) => setSubject(e.target.value)} /></Field>
+        <Field label="Subject">
+          <TextInput required value={subject} onChange={(e) => setSubject(e.target.value)} />
+        </Field>
         <div className="grid grid-cols-2 gap-3">
           <Field label="Tone">
             <Select value={tone} onChange={(e) => setTone(e.target.value)}>
-              {["direct", "warm", "executive", "peer", "formal", "conversational"].map((t) => <option key={t} value={t}>{t}</option>)}
+              {["direct", "warm", "executive", "peer", "formal", "conversational"].map((t) => (
+                <option key={t} value={t}>
+                  {t}
+                </option>
+              ))}
             </Select>
           </Field>
           <Field label="Lead">
             <Select value={lead_id} onChange={(e) => setLead(e.target.value)}>
               <option value="">—</option>
-              {leads.map((l) => <option key={l.id} value={l.id}>{l.stage} · {l.id.slice(0, 8)}</option>)}
+              {leads.map((l) => (
+                <option key={l.id} value={l.id}>
+                  {l.stage} · {l.id.slice(0, 8)}
+                </option>
+              ))}
             </Select>
           </Field>
         </div>
-        <Field label="Body"><TextArea rows={6} value={body} onChange={(e) => setBody(e.target.value)} /></Field>
+        <Field label="Body">
+          <TextArea rows={6} value={body} onChange={(e) => setBody(e.target.value)} />
+        </Field>
         <div className="flex justify-end gap-2 pt-2">
           <GhostBtn onClick={onClose}>Cancel</GhostBtn>
-          <PrimaryBtn type="submit" disabled={submitting || !subject}>Create</PrimaryBtn>
+          <PrimaryBtn type="submit" disabled={submitting || !subject}>
+            Create
+          </PrimaryBtn>
         </div>
       </form>
     </Modal>
   );
 }
 
-function ScheduleForm({ onClose, onSubmit }: { onClose: () => void; onSubmit: (iso: string) => Promise<void> }) {
+function ScheduleForm({
+  onClose,
+  onSubmit,
+}: {
+  onClose: () => void;
+  onSubmit: (iso: string) => Promise<void>;
+}) {
   const soon = new Date(Date.now() + 60 * 60 * 1000).toISOString().slice(0, 16);
   const [when, setWhen] = useState(soon);
   return (
@@ -524,7 +625,11 @@ type CopilotDraft = {
 };
 
 function AICopilotModal({
-  open, onClose, leads, companies, onSaved,
+  open,
+  onClose,
+  leads,
+  companies,
+  onSaved,
 }: {
   open: boolean;
   onClose: () => void;
@@ -566,7 +671,9 @@ function AICopilotModal({
           spam_risk: res.output.spam_risk ?? 0,
         });
       }
-    } catch { /* toast handled */ }
+    } catch {
+      /* toast handled */
+    }
   }
 
   async function handleSave() {
@@ -585,7 +692,9 @@ function AICopilotModal({
       setDraft(null);
       setCtx("");
       onSaved();
-    } catch (e) { toast.error((e as Error).message); }
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
   }
 
   const busy = ai.isPending;
@@ -594,7 +703,9 @@ function AICopilotModal({
     <Modal open={open} onClose={onClose} title="AI Email Copilot">
       <div className="space-y-4">
         <div>
-          <p className="text-[10px] uppercase tracking-wider text-foreground-subtle mb-2">Email type</p>
+          <p className="text-[10px] uppercase tracking-wider text-foreground-subtle mb-2">
+            Email type
+          </p>
           <div className="grid grid-cols-3 gap-2">
             {COPILOT_TYPES.map((t) => (
               <button
@@ -617,18 +728,30 @@ function AICopilotModal({
         <div className="grid grid-cols-3 gap-3">
           <Field label="Tone">
             <Select value={tone} onChange={(e) => setTone(e.target.value)}>
-              {COPILOT_TONES.map((t) => <option key={t} value={t}>{t}</option>)}
+              {COPILOT_TONES.map((t) => (
+                <option key={t} value={t}>
+                  {t}
+                </option>
+              ))}
             </Select>
           </Field>
           <Field label="Length">
             <Select value={length} onChange={(e) => setLength(e.target.value as any)}>
-              {COPILOT_LENGTHS.map((l) => <option key={l.id} value={l.id}>{l.label} · {l.hint}</option>)}
+              {COPILOT_LENGTHS.map((l) => (
+                <option key={l.id} value={l.id}>
+                  {l.label} · {l.hint}
+                </option>
+              ))}
             </Select>
           </Field>
           <Field label="Lead (optional)">
             <Select value={leadId} onChange={(e) => setLeadId(e.target.value)}>
               <option value="">—</option>
-              {leads.map((l) => <option key={l.id} value={l.id}>{l.stage} · {l.id.slice(0, 8)}</option>)}
+              {leads.map((l) => (
+                <option key={l.id} value={l.id}>
+                  {l.stage} · {l.id.slice(0, 8)}
+                </option>
+              ))}
             </Select>
           </Field>
         </div>
@@ -636,19 +759,31 @@ function AICopilotModal({
         <Field label="Company (for research personalization)">
           <Select value={companyId} onChange={(e) => setCompanyId(e.target.value)}>
             <option value="">—</option>
-            {companies.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
+            {companies.map((c: any) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
           </Select>
         </Field>
 
         <Field label="Extra instructions (optional)">
-          <TextArea rows={2} value={ctx} onChange={(e) => setCtx(e.target.value)}
-            placeholder="Anything specific — the trigger event, product angle, prior conversation…" />
+          <TextArea
+            rows={2}
+            value={ctx}
+            onChange={(e) => setCtx(e.target.value)}
+            placeholder="Anything specific — the trigger event, product angle, prior conversation…"
+          />
         </Field>
 
         <div className="flex justify-end gap-2">
           <GhostBtn onClick={onClose}>Cancel</GhostBtn>
           <PrimaryBtn onClick={handleGenerate} disabled={busy}>
-            {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+            {busy ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Sparkles className="h-3.5 w-3.5" />
+            )}
             {busy ? "Generating…" : draft ? "Regenerate" : "Generate"}
           </PrimaryBtn>
         </div>
@@ -657,7 +792,10 @@ function AICopilotModal({
           <div className="space-y-3 border-t border-border pt-4">
             <div>
               <p className="text-[10px] uppercase tracking-wider text-foreground-subtle">Subject</p>
-              <TextInput value={draft.subject} onChange={(e) => setDraft({ ...draft, subject: e.target.value })} />
+              <TextInput
+                value={draft.subject}
+                onChange={(e) => setDraft({ ...draft, subject: e.target.value })}
+              />
               {draft.subject_variants && draft.subject_variants.length > 0 && (
                 <div className="mt-2 flex flex-wrap gap-1.5">
                   {draft.subject_variants.map((v, i) => (
@@ -675,16 +813,27 @@ function AICopilotModal({
             </div>
 
             <div>
-              <p className="text-[10px] uppercase tracking-wider text-foreground-subtle">Body preview</p>
-              <TextArea rows={9} value={draft.body} onChange={(e) => setDraft({ ...draft, body: e.target.value })} />
+              <p className="text-[10px] uppercase tracking-wider text-foreground-subtle">
+                Body preview
+              </p>
+              <TextArea
+                rows={9}
+                value={draft.body}
+                onChange={(e) => setDraft({ ...draft, body: e.target.value })}
+              />
             </div>
 
             {draft.cta_suggestions && draft.cta_suggestions.length > 0 && (
               <div>
-                <p className="text-[10px] uppercase tracking-wider text-foreground-subtle mb-1.5">CTA suggestions</p>
+                <p className="text-[10px] uppercase tracking-wider text-foreground-subtle mb-1.5">
+                  CTA suggestions
+                </p>
                 <div className="flex flex-wrap gap-1.5">
                   {[draft.cta, ...draft.cta_suggestions].filter(Boolean).map((c, i) => (
-                    <span key={i} className="text-[11px] px-2 py-1 rounded-md border border-border bg-surface text-foreground-muted">
+                    <span
+                      key={i}
+                      className="text-[11px] px-2 py-1 rounded-md border border-border bg-surface text-foreground-muted"
+                    >
                       {c}
                     </span>
                   ))}

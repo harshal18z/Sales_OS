@@ -5,7 +5,8 @@
 
 type ChatMsg = { role: "system" | "user" | "assistant"; content: string };
 
-export type ProviderId = "lovable" | "openai" | "anthropic" | "gemini" | "groq";const DEFAULT_MODELS: Record<ProviderId, string> = {
+export type ProviderId = "lovable" | "openai" | "anthropic" | "gemini" | "groq";
+const DEFAULT_MODELS: Record<ProviderId, string> = {
   lovable: "google/gemini-2.5-flash",
   openai: "gpt-4o-mini",
   anthropic: "claude-3-5-sonnet-latest",
@@ -14,7 +15,7 @@ export type ProviderId = "lovable" | "openai" | "anthropic" | "gemini" | "groq";
 };
 
 export function pickProvider(): { id: ProviderId; apiKey: string; model: string } {
-  let id = (process.env.AI_PROVIDER as ProviderId);
+  let id = process.env.AI_PROVIDER as ProviderId;
   if (!id) {
     if (process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY) id = "gemini";
     else if (process.env.OPENAI_API_KEY) id = "openai";
@@ -69,7 +70,10 @@ async function anthropicChat(
   messages: ChatMsg[],
   json: boolean,
 ): Promise<string> {
-  const system = messages.filter((m) => m.role === "system").map((m) => m.content).join("\n\n");
+  const system = messages
+    .filter((m) => m.role === "system")
+    .map((m) => m.content)
+    .join("\n\n");
   const rest = messages.filter((m) => m.role !== "system");
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
@@ -96,10 +100,16 @@ async function geminiChat(
   messages: ChatMsg[],
   json: boolean,
 ): Promise<string> {
-  const system = messages.filter((m) => m.role === "system").map((m) => m.content).join("\n\n");
+  const system = messages
+    .filter((m) => m.role === "system")
+    .map((m) => m.content)
+    .join("\n\n");
   const contents = messages
     .filter((m) => m.role !== "system")
-    .map((m) => ({ role: m.role === "assistant" ? "model" : "user", parts: [{ text: m.content }] }));
+    .map((m) => ({
+      role: m.role === "assistant" ? "model" : "user",
+      parts: [{ text: m.content }],
+    }));
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
   const res = await fetch(url, {
     method: "POST",
@@ -130,11 +140,23 @@ export async function aiChat(opts: {
 
   switch (id) {
     case "lovable":
-      return openAICompatible("https://ai.gateway.lovable.dev/v1", apiKey, model, messages, !!opts.json);
+      return openAICompatible(
+        "https://ai.gateway.lovable.dev/v1",
+        apiKey,
+        model,
+        messages,
+        !!opts.json,
+      );
     case "openai":
       return openAICompatible("https://api.openai.com/v1", apiKey, model, messages, !!opts.json);
     case "groq":
-      return openAICompatible("https://api.groq.com/openai/v1", apiKey, model, messages, !!opts.json);
+      return openAICompatible(
+        "https://api.groq.com/openai/v1",
+        apiKey,
+        model,
+        messages,
+        !!opts.json,
+      );
     case "anthropic":
       return anthropicChat(apiKey, model, messages, !!opts.json);
     case "gemini":
@@ -166,10 +188,16 @@ export async function streamAI(opts: {
   messages.push({ role: "user", content: opts.user });
 
   if (id === "gemini") {
-    const system = messages.filter((m) => m.role === "system").map((m) => m.content).join("\n\n");
+    const system = messages
+      .filter((m) => m.role === "system")
+      .map((m) => m.content)
+      .join("\n\n");
     const contents = messages
       .filter((m) => m.role !== "system")
-      .map((m) => ({ role: m.role === "assistant" ? "model" : "user", parts: [{ text: m.content }] }));
+      .map((m) => ({
+        role: m.role === "assistant" ? "model" : "user",
+        parts: [{ text: m.content }],
+      }));
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse&key=${apiKey}`;
     const res = await fetch(url, {
       method: "POST",

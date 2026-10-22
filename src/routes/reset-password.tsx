@@ -7,10 +7,7 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/reset-password")({
   head: () => ({
-    meta: [
-      { title: "Set new password — SalesOS AI" },
-      { name: "robots", content: "noindex" },
-    ],
+    meta: [{ title: "Set new password — SalesOS AI" }, { name: "robots", content: "noindex" }],
   }),
   component: ResetPasswordPage,
 });

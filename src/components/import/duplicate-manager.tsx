@@ -27,7 +27,9 @@ export function DuplicateManagerModal({
 
   const groups: DuplicateGroup<any>[] = useMemo(() => {
     if (kind === "companies") {
-      return groupDuplicates(rows as any[], (r) => (r.domain ? String(r.domain).toLowerCase() : null));
+      return groupDuplicates(rows as any[], (r) =>
+        r.domain ? String(r.domain).toLowerCase() : null,
+      );
     }
     return groupDuplicates(rows as any[], (r) => (r.email ? String(r.email).toLowerCase() : null));
   }, [rows, kind]);
@@ -42,11 +44,20 @@ export function DuplicateManagerModal({
         await supabase.from("leads").update({ company_id: keeperId }).in("company_id", dupIds);
         await supabase.from("crm_deals").update({ company_id: keeperId }).in("company_id", dupIds);
         await supabase.from("meetings").update({ company_id: keeperId }).in("company_id", dupIds);
-        await supabase.from("research_reports").update({ company_id: keeperId }).in("company_id", dupIds);
-        await supabase.from("companies").update({ deleted_at: new Date().toISOString() }).in("id", dupIds);
+        await supabase
+          .from("research_reports")
+          .update({ company_id: keeperId })
+          .in("company_id", dupIds);
+        await supabase
+          .from("companies")
+          .update({ deleted_at: new Date().toISOString() })
+          .in("id", dupIds);
       } else {
         await supabase.from("leads").update({ contact_id: keeperId }).in("contact_id", dupIds);
-        await supabase.from("contacts").update({ deleted_at: new Date().toISOString() }).in("id", dupIds);
+        await supabase
+          .from("contacts")
+          .update({ deleted_at: new Date().toISOString() })
+          .in("id", dupIds);
       }
       toast.success(`Merged ${dupIds.length} duplicate${dupIds.length === 1 ? "" : "s"}`);
       qc.invalidateQueries({ queryKey: [kind] });
@@ -62,7 +73,11 @@ export function DuplicateManagerModal({
   }
 
   return (
-    <Modal open={open} onClose={onClose} title={`Duplicate ${kind === "companies" ? "Companies" : "Contacts"}`}>
+    <Modal
+      open={open}
+      onClose={onClose}
+      title={`Duplicate ${kind === "companies" ? "Companies" : "Contacts"}`}
+    >
       <div className="space-y-3 min-w-[520px]">
         {groups.length === 0 ? (
           <div className="rounded-lg border border-border bg-surface-muted/40 p-6 text-center">
@@ -75,8 +90,8 @@ export function DuplicateManagerModal({
         ) : (
           <>
             <p className="text-[12px] text-foreground-muted">
-              {groups.length} duplicate group{groups.length === 1 ? "" : "s"} found.
-              Pick the record to keep — all references will be repointed and the others soft-deleted.
+              {groups.length} duplicate group{groups.length === 1 ? "" : "s"} found. Pick the record
+              to keep — all references will be repointed and the others soft-deleted.
             </p>
             <div className="space-y-2 max-h-96 overflow-y-auto pr-1">
               {groups.map((g) => (
@@ -97,10 +112,13 @@ export function DuplicateManagerModal({
                         <div key={r.id} className="flex items-center justify-between px-3 py-2">
                           <div className="min-w-0">
                             <p className="text-[12.5px] text-foreground truncate">
-                              {kind === "companies" ? r.name : r.full_name} · <span className="text-foreground-subtle">{new Date(r.created_at).toLocaleDateString()}</span>
+                              {kind === "companies" ? r.name : r.full_name} ·{" "}
+                              <span className="text-foreground-subtle">
+                                {new Date(r.created_at).toLocaleDateString()}
+                              </span>
                             </p>
                             <p className="text-[11px] text-foreground-subtle truncate">
-                              {kind === "companies" ? r.industry ?? "—" : r.title ?? "—"}
+                              {kind === "companies" ? (r.industry ?? "—") : (r.title ?? "—")}
                             </p>
                           </div>
                           <PrimaryBtn onClick={() => mergeGroup(g, r.id)} disabled={busy}>

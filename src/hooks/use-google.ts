@@ -110,7 +110,10 @@ export function useDisconnect(connectorId: string) {
 
 // ---------- Gmail ----------
 
-export function useGmailMessages(input: { folder?: string; query?: string; max?: number }, enabled = true) {
+export function useGmailMessages(
+  input: { folder?: string; query?: string; max?: number },
+  enabled = true,
+) {
   const fn = useServerFn(gmailListMessages);
   return useQuery({
     queryKey: ["gmail", "messages", input],
@@ -143,7 +146,8 @@ export function useGmailSend() {
   const qc = useQueryClient();
   const fn = useServerFn(gmailSend);
   return useMutation({
-    mutationFn: (input: NonNullable<Parameters<typeof gmailSend>[0]>["data"]) => fn({ data: input }),
+    mutationFn: (input: NonNullable<Parameters<typeof gmailSend>[0]>["data"]) =>
+      fn({ data: input }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["gmail"] }),
   });
 }
@@ -198,16 +202,14 @@ export function useGmailScheduleSend() {
   const qc = useQueryClient();
   const fn = useServerFn(gmailScheduleSend);
   return useMutation({
-    mutationFn: (
-      input: {
-        to: string;
-        subject: string;
-        body: string;
-        scheduledAt: string;
-        cc?: string;
-        bcc?: string;
-      },
-    ) => fn({ data: input }),
+    mutationFn: (input: {
+      to: string;
+      subject: string;
+      body: string;
+      scheduledAt: string;
+      cc?: string;
+      bcc?: string;
+    }) => fn({ data: input }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["gmail"] });
       qc.invalidateQueries({ queryKey: ["emails"] });
@@ -243,7 +245,8 @@ export function useCalendarCreate() {
   const qc = useQueryClient();
   const fn = useServerFn(calendarCreateEvent);
   return useMutation({
-    mutationFn: (input: NonNullable<Parameters<typeof calendarCreateEvent>[0]>["data"]) => fn({ data: input }),
+    mutationFn: (input: NonNullable<Parameters<typeof calendarCreateEvent>[0]>["data"]) =>
+      fn({ data: input }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["calendar"] }),
   });
 }
@@ -252,7 +255,8 @@ export function useCalendarUpdate() {
   const qc = useQueryClient();
   const fn = useServerFn(calendarUpdateEvent);
   return useMutation({
-    mutationFn: (input: NonNullable<Parameters<typeof calendarUpdateEvent>[0]>["data"]) => fn({ data: input }),
+    mutationFn: (input: NonNullable<Parameters<typeof calendarUpdateEvent>[0]>["data"]) =>
+      fn({ data: input }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["calendar"] }),
   });
 }

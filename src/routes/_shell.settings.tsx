@@ -73,7 +73,8 @@ function SettingsPage() {
       <header>
         <h1 className="text-2xl font-semibold tracking-tight">Settings</h1>
         <p className="text-[13.5px] text-foreground-muted mt-1">
-          Workspace {workspace?.name ? <span className="text-foreground">· {workspace.name}</span> : null}
+          Workspace{" "}
+          {workspace?.name ? <span className="text-foreground">· {workspace.name}</span> : null}
         </p>
       </header>
 
@@ -123,10 +124,10 @@ function SettingsPage() {
                 <div className="font-medium">Demo data generated</div>
                 <div className="text-foreground-muted">
                   {lastCounts.companies} companies · {lastCounts.contacts} contacts ·{" "}
-                  {lastCounts.leads} leads · {lastCounts.deals} deals ·{" "}
-                  {lastCounts.campaigns} campaigns · {lastCounts.meetings} meetings ·{" "}
-                  {lastCounts.emails} emails · {lastCounts.activities} activities ·{" "}
-                  {lastCounts.research_reports} research reports
+                  {lastCounts.leads} leads · {lastCounts.deals} deals · {lastCounts.campaigns}{" "}
+                  campaigns · {lastCounts.meetings} meetings · {lastCounts.emails} emails ·{" "}
+                  {lastCounts.activities} activities · {lastCounts.research_reports} research
+                  reports
                 </div>
               </div>
             </div>

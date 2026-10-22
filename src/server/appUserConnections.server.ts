@@ -26,7 +26,10 @@ export async function saveConnectionKeyForUser(
   if (error) throw error;
 }
 
-export async function getConnectionKeyForUser(userId: string, connectorId: string): Promise<string | null> {
+export async function getConnectionKeyForUser(
+  userId: string,
+  connectorId: string,
+): Promise<string | null> {
   const sb = await admin();
   const { data, error } = await sb
     .from("app_user_connections")

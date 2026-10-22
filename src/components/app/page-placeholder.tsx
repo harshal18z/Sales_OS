@@ -19,9 +19,7 @@ export function PagePlaceholder({
       <header className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4 sm:flex sm:items-center sm:justify-between mb-8">
         <div className="min-w-0">
           <h1 className="text-heading truncate">{title}</h1>
-          <p className="mt-1.5 text-body text-foreground-muted max-w-2xl">
-            {description}
-          </p>
+          <p className="mt-1.5 text-body text-foreground-muted max-w-2xl">{description}</p>
         </div>
         {actions && <div className="shrink-0">{actions}</div>}
       </header>
@@ -33,8 +31,8 @@ export function PagePlaceholder({
           </div>
           <h2 className="text-card-title">Nothing here yet</h2>
           <p className="mt-1.5 text-body text-foreground-muted max-w-md">
-            This space will fill in as you use SalesOS AI. Get started or wait
-            for AI to surface something for you.
+            This space will fill in as you use SalesOS AI. Get started or wait for AI to surface
+            something for you.
           </p>
         </div>
       </section>

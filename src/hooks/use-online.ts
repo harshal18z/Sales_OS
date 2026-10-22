@@ -6,8 +6,7 @@ const REQUEST_TIMEOUT_MS = 5_000;
 
 type Listener = () => void;
 
-let currentOnline: boolean =
-  typeof navigator === "undefined" ? true : navigator.onLine;
+let currentOnline: boolean = typeof navigator === "undefined" ? true : navigator.onLine;
 const listeners = new Set<Listener>();
 let started = false;
 let pollTimer: ReturnType<typeof setInterval> | null = null;

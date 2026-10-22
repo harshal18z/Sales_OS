@@ -31,7 +31,9 @@ export class AppErrorBoundary extends Component<{ children: ReactNode }, State> 
           <div className="mx-auto h-10 w-10 rounded-lg border border-border bg-surface grid place-items-center">
             <AlertTriangle className="h-4 w-4 text-foreground-muted" />
           </div>
-          <h2 className="mt-4 text-[15px] font-semibold text-foreground">Something went wrong on this page</h2>
+          <h2 className="mt-4 text-[15px] font-semibold text-foreground">
+            Something went wrong on this page
+          </h2>
           <p className="mt-1.5 text-[12.5px] text-foreground-muted">
             The rest of the app is still available. Try again, or head back to the dashboard.
           </p>

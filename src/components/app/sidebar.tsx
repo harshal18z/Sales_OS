@@ -40,13 +40,7 @@ const items: Item[] = [
   { label: "Billing", to: "/billing", icon: CreditCard },
 ];
 
-export function AppSidebar({
-  collapsed,
-  onToggle,
-}: {
-  collapsed: boolean;
-  onToggle: () => void;
-}) {
+export function AppSidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => void }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   return (
@@ -70,8 +64,7 @@ export function AppSidebar({
       <nav className="flex-1 overflow-y-auto py-3 px-2">
         <ul className="space-y-0.5">
           {items.map((item) => {
-            const active =
-              pathname === item.to || pathname.startsWith(item.to + "/");
+            const active = pathname === item.to || pathname.startsWith(item.to + "/");
             const Icon = item.icon;
             return (
               <li key={item.to}>

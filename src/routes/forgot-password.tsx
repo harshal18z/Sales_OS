@@ -72,7 +72,10 @@ function ForgotPasswordPage() {
           </form>
           <p className="text-caption text-center mt-8">
             Remembered it?{" "}
-            <Link to="/login" className="text-foreground font-medium hover:underline underline-offset-4">
+            <Link
+              to="/login"
+              className="text-foreground font-medium hover:underline underline-offset-4"
+            >
               Sign in instead
             </Link>
           </p>
@@ -90,12 +93,13 @@ function SentState({ email, onResend }: { email: string; onResend: () => void })
       </div>
       <h1 className="text-heading mt-6">Check your inbox</h1>
       <p className="text-body text-foreground-muted mt-2 max-w-[340px] mx-auto">
-        We sent a reset link to{" "}
-        <span className="text-foreground font-medium">{email}</span>.
+        We sent a reset link to <span className="text-foreground font-medium">{email}</span>.
       </p>
       <div className="mt-8">
         <Link to="/login">
-          <Button size="lg" full>Back to sign in</Button>
+          <Button size="lg" full>
+            Back to sign in
+          </Button>
         </Link>
       </div>
       <button

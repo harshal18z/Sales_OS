@@ -46,15 +46,7 @@ const INDUSTRIES = [
   "HR Tech",
 ];
 const SIZES = ["1-10", "11-50", "51-200", "201-500", "501-1000", "1000+"];
-const REVENUES = [
-  "<$1M",
-  "$1-5M",
-  "$5-25M",
-  "$25-100M",
-  "$100-500M",
-  "$500M-1B",
-  ">$1B",
-];
+const REVENUES = ["<$1M", "$1-5M", "$5-25M", "$25-100M", "$100-500M", "$500M-1B", ">$1B"];
 const LOCATIONS = [
   "San Francisco, CA",
   "New York, NY",
@@ -301,9 +293,7 @@ function slugDomain(name: string) {
 // ---------- Reset ----------
 export const resetDemo = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: unknown) =>
-    z.object({ workspaceId: z.string().uuid() }).parse(data),
-  )
+  .inputValidator((data: unknown) => z.object({ workspaceId: z.string().uuid() }).parse(data))
   .handler(async ({ data, context }) => {
     const sb = context.supabase as any;
     const ws = data.workspaceId;
@@ -365,11 +355,7 @@ export const resetDemo = createServerFn({ method: "POST" })
       .delete()
       .eq("workspace_id", ws)
       .contains("metadata", { demo: true });
-    await sb
-      .from("ai_jobs")
-      .delete()
-      .eq("workspace_id", ws)
-      .contains("input", { demo: true });
+    await sb.from("ai_jobs").delete().eq("workspace_id", ws).contains("input", { demo: true });
 
     return { ok: true };
   });
@@ -418,11 +404,7 @@ export const generateDemo = createServerFn({ method: "POST" })
         await sb.from("tasks").delete().eq("workspace_id", ws).in("lead_id", lids);
         await sb.from("emails").delete().eq("workspace_id", ws).in("lead_id", lids);
         await sb.from("meetings").delete().eq("workspace_id", ws).in("lead_id", lids);
-        await sb
-          .from("research_reports")
-          .delete()
-          .eq("workspace_id", ws)
-          .in("lead_id", lids);
+        await sb.from("research_reports").delete().eq("workspace_id", ws).in("lead_id", lids);
       }
       if (cpids.length) {
         await sb.from("emails").delete().eq("workspace_id", ws).in("campaign_id", cpids);
@@ -442,17 +424,16 @@ export const generateDemo = createServerFn({ method: "POST" })
         .delete()
         .eq("workspace_id", ws)
         .contains("metadata", { demo: true });
-      await sb
-        .from("ai_jobs")
-        .delete()
-        .eq("workspace_id", ws)
-        .contains("input", { demo: true });
+      await sb.from("ai_jobs").delete().eq("workspace_id", ws).contains("input", { demo: true });
     }
 
     // ---- Companies (100) ----
     const companies = Array.from({ length: 100 }, (_, i) => {
       const name =
-        pick(rng, COMPANY_PREFIX) + " " + pick(rng, COMPANY_SUFFIX) + (rng() < 0.15 ? " " + randInt(rng, 2, 99) : "");
+        pick(rng, COMPANY_PREFIX) +
+        " " +
+        pick(rng, COMPANY_SUFFIX) +
+        (rng() < 0.15 ? " " + randInt(rng, 2, 99) : "");
       const industry = pick(rng, INDUSTRIES);
       return {
         workspace_id: ws,
@@ -492,7 +473,14 @@ export const generateDemo = createServerFn({ method: "POST" })
         status: pick(rng, ["active", "active", "active", "paused", "draft"]),
         channel: t.channel,
         goal: t.goal,
-        stats: { sent, opens, replies, meetings, open_rate: opens / sent, reply_rate: replies / sent },
+        stats: {
+          sent,
+          opens,
+          replies,
+          meetings,
+          open_rate: opens / sent,
+          reply_rate: replies / sent,
+        },
         created_by: userId,
       };
     });
@@ -632,7 +620,10 @@ export const generateDemo = createServerFn({ method: "POST" })
         company_id: co.id,
         query: `Company research: ${co.name}`,
         summary: `${co.name} is expanding in ${co.industry}. Recent signals include hiring, product launches, and funding activity. Strong ICP fit for outbound.`,
-        pain_points: pains.map((p) => ({ point: p, severity: pick(rng, ["high", "medium", "low"]) })),
+        pain_points: pains.map((p) => ({
+          point: p,
+          severity: pick(rng, ["high", "medium", "low"]),
+        })),
         opportunities: [
           { title: "Reduce onboarding time", impact: "high" },
           { title: "Expand into EMEA", impact: "medium" },
@@ -745,9 +736,7 @@ export const generateDemo = createServerFn({ method: "POST" })
       };
     });
     for (let i = 0; i < activitiesPayload.length; i += 250) {
-      const { error } = await sb
-        .from("activity_logs")
-        .insert(activitiesPayload.slice(i, i + 250));
+      const { error } = await sb.from("activity_logs").insert(activitiesPayload.slice(i, i + 250));
       if (error) throw new Error(`activity: ${error.message}`);
     }
 
@@ -765,9 +754,7 @@ export const generateDemo = createServerFn({ method: "POST" })
     const pipelineHealth = randInt(rng, 62, 88);
     const winRate = randInt(rng, 24, 38);
     const salesVelocity = randInt(rng, 45, 120);
-    const forecastNext = Math.round(
-      trend[trend.length - 1].revenue * (1 + (winRate - 25) / 100),
-    );
+    const forecastNext = Math.round(trend[trend.length - 1].revenue * (1 + (winRate - 25) / 100));
 
     await sb.from("ai_jobs").insert({
       workspace_id: ws,
@@ -783,8 +770,16 @@ export const generateDemo = createServerFn({ method: "POST" })
         forecast_next_month: forecastNext,
         executive_summary: `Pipeline health is ${pipelineHealth}/100 with ${winRate}% predicted win rate. Sales velocity ${salesVelocity} days. Forecast: $${(forecastNext / 1000).toFixed(0)}k next month, up ~${randInt(rng, 8, 22)}% MoM.`,
         insights: [
-          { title: "Enterprise segment outperforming", sentiment: "positive", detail: "Deal size up 18% MoM." },
-          { title: "Mid-market stalling in proposal", sentiment: "negative", detail: "Cycle time +12 days." },
+          {
+            title: "Enterprise segment outperforming",
+            sentiment: "positive",
+            detail: "Deal size up 18% MoM.",
+          },
+          {
+            title: "Mid-market stalling in proposal",
+            sentiment: "negative",
+            detail: "Cycle time +12 days.",
+          },
           { title: "Inbound quality improving", sentiment: "positive", detail: "Reply rate 8.4%." },
         ],
         recommendations: [

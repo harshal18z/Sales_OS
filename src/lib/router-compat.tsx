@@ -38,7 +38,15 @@ export function useNavigate() {
   const rrNavigate = useRRNavigate();
 
   return (
-    toOrOptions: string | number | { to: string; replace?: boolean; search?: Record<string, any>; params?: Record<string, any> },
+    toOrOptions:
+      | string
+      | number
+      | {
+          to: string;
+          replace?: boolean;
+          search?: Record<string, any>;
+          params?: Record<string, any>;
+        },
     maybeOptions?: NavigateOptions,
   ) => {
     if (typeof toOrOptions === "object" && toOrOptions !== null && "to" in toOrOptions) {
@@ -62,7 +70,9 @@ export function useLocation() {
   return useRRLocation();
 }
 
-export function useParams<T extends Record<string, string | undefined> = Record<string, string | undefined>>(): T {
+export function useParams<
+  T extends Record<string, string | undefined> = Record<string, string | undefined>,
+>(): T {
   return useRRParams() as T;
 }
 
@@ -73,14 +83,19 @@ export function useSearch<T = Record<string, string>>(): T {
   }, [searchParams]);
 }
 
-export function useRouterState<T = any>(opts?: { select?: (state: { location: { pathname: string; search: string } }) => T }): T {
+export function useRouterState<T = any>(opts?: {
+  select?: (state: { location: { pathname: string; search: string } }) => T;
+}): T {
   const location = useRRLocation();
-  const state = useMemo(() => ({
-    location: {
-      pathname: location.pathname,
-      search: location.search,
-    },
-  }), [location]);
+  const state = useMemo(
+    () => ({
+      location: {
+        pathname: location.pathname,
+        search: location.search,
+      },
+    }),
+    [location],
+  );
 
   if (opts?.select) {
     return opts.select(state);

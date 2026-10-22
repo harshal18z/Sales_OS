@@ -86,11 +86,7 @@ export function useAIEmail() {
 
 export function useAILeadScore() {
   const fn = useServerFn(runLeadScoring);
-  return useAIMutation<{ leadId: string }, unknown>(
-    fn as never,
-    "Lead scored",
-    ["leads"],
-  );
+  return useAIMutation<{ leadId: string }, unknown>(fn as never, "Lead scored", ["leads"]);
 }
 
 export function useAIMeetingPrep() {
@@ -113,11 +109,9 @@ export function useAIMeetingRecap() {
 
 export function useAINextAction() {
   const fn = useServerFn(runNextAction);
-  return useAIMutation<{ dealId: string }, unknown>(
-    fn as never,
-    "Recommendation ready",
-    ["crm_deals"],
-  );
+  return useAIMutation<{ dealId: string }, unknown>(fn as never, "Recommendation ready", [
+    "crm_deals",
+  ]);
 }
 
 export function useAICampaignGenerator() {
@@ -142,16 +136,18 @@ export function useAICampaignGenerator() {
 export function useScheduleCampaign() {
   const fn = useServerFn(scheduleCampaign);
   return useAIMutation<
-    { campaignId: string; scheduledAt?: string | null; status?: "draft" | "scheduled" | "active" | "paused" },
+    {
+      campaignId: string;
+      scheduledAt?: string | null;
+      status?: "draft" | "scheduled" | "active" | "paused";
+    },
     unknown
   >(fn as never, "Campaign updated", ["campaigns"]);
 }
 
 export function useAIRevenueIntelligence() {
   const fn = useServerFn(runRevenueIntelligence);
-  return useAIMutation<{ force?: boolean }, unknown>(
-    fn as never,
-    "Revenue intelligence ready",
-    ["ai_jobs"],
-  );
+  return useAIMutation<{ force?: boolean }, unknown>(fn as never, "Revenue intelligence ready", [
+    "ai_jobs",
+  ]);
 }

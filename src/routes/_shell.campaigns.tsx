@@ -66,7 +66,8 @@ type Campaign = {
 function mapCampaign(row: any): Campaign {
   const stats = (row.stats ?? {}) as Record<string, any>;
   const s = (row.status ?? "draft").toLowerCase();
-  const status: Campaign["status"] = s === "active" ? "Active" : s === "paused" ? "Paused" : "Draft";
+  const status: Campaign["status"] =
+    s === "active" ? "Active" : s === "paused" ? "Paused" : "Draft";
   return {
     id: row.id,
     name: row.name,
@@ -76,7 +77,10 @@ function mapCampaign(row: any): Campaign {
     replyRate: Number(stats.replyRate ?? 0),
     meetings: Number(stats.meetings ?? 0),
     owner: stats.owner ?? "—",
-    updated: new Date(row.updated_at).toLocaleDateString(undefined, { month: "short", day: "numeric" }),
+    updated: new Date(row.updated_at).toLocaleDateString(undefined, {
+      month: "short",
+      day: "numeric",
+    }),
     goal: row.goal ?? row.description ?? "—",
     icp: stats.icp ?? "—",
     progress: Number(stats.progress ?? 0),
@@ -86,12 +90,23 @@ function mapCampaign(row: any): Campaign {
   };
 }
 
-
 const INITIAL_STEPS = [
-  { icon: Building2, label: "Research Companies", detail: "Firmographics · funding · hiring signals" },
-  { icon: UserSearch, label: "Find Decision Makers", detail: "Title, seniority & buying committee mapping" },
+  {
+    icon: Building2,
+    label: "Research Companies",
+    detail: "Firmographics · funding · hiring signals",
+  },
+  {
+    icon: UserSearch,
+    label: "Find Decision Makers",
+    detail: "Title, seniority & buying committee mapping",
+  },
   { icon: Database, label: "Enrich Contact Data", detail: "Verified email + mobile + LinkedIn" },
-  { icon: PenLine, label: "Generate Personalized Email", detail: "GPT-tuned to voice + recent trigger" },
+  {
+    icon: PenLine,
+    label: "Generate Personalized Email",
+    detail: "GPT-tuned to voice + recent trigger",
+  },
   { icon: Eye, label: "Review Draft", detail: "Human-in-the-loop approval" },
   { icon: Send, label: "Send", detail: "Warmed inbox · optimal send time" },
   { icon: Clock, label: "Wait 3 Days", detail: "Adaptive to engagement signals" },
@@ -107,7 +122,6 @@ const AI_ACTIVITY = [
   { text: "Enriching 42 contacts · Databricks", target: "Series A SaaS", pct: 61 },
   { text: "Updating CRM · 18 records", target: "System", pct: 95 },
 ];
-
 
 const PERF = [
   { label: "Emails", value: "1,284", delta: "+12.4%", series: [4, 6, 5, 8, 7, 10, 12] },
@@ -155,16 +169,27 @@ function CampaignsPage() {
     best_send_window?: string;
     spam_score_avg?: number;
     steps?: Array<{
-      step: number; day_offset: number; channel: "email" | "linkedin"; type?: string;
-      subject?: string; subject_variants?: string[]; body: string;
-      cta?: string; cta_suggestions?: string[]; best_send_time?: string; spam_score?: number;
+      step: number;
+      day_offset: number;
+      channel: "email" | "linkedin";
+      type?: string;
+      subject?: string;
+      subject_variants?: string[];
+      body: string;
+      cta?: string;
+      cta_suggestions?: string[];
+      best_send_time?: string;
+      spam_score?: number;
       variant_b?: { subject?: string; body: string; cta?: string } | null;
     }>;
   };
   const liveJob = useMemo(() => {
-    return (aiJobs as any[])
-      .filter((j) => j.kind === "campaign_generator" && j.entity_id === selectedId)
-      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0] ?? null;
+    return (
+      (aiJobs as any[])
+        .filter((j) => j.kind === "campaign_generator" && j.entity_id === selectedId)
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0] ??
+      null
+    );
   }, [aiJobs, selectedId]);
   const jobRunning = liveJob && (liveJob.status === "queued" || liveJob.status === "running");
 
@@ -228,7 +253,6 @@ function CampaignsPage() {
     });
   }
 
-
   useEffect(() => {
     const id = setInterval(() => {
       setActivity((prev) =>
@@ -281,7 +305,6 @@ function CampaignsPage() {
     return <div className="p-8 text-caption">Loading campaigns…</div>;
   }
 
-
   return (
     <div className="flex flex-col min-h-full">
       {/* TOP BAR */}
@@ -298,9 +321,7 @@ function CampaignsPage() {
                 </h1>
                 <StatusPill status={selected.status} />
               </div>
-              <p className="text-xs text-foreground-subtle truncate">
-                {selected.icp}
-              </p>
+              <p className="text-xs text-foreground-subtle truncate">{selected.icp}</p>
             </div>
           </div>
 
@@ -314,9 +335,16 @@ function CampaignsPage() {
                 className="h-8 w-56 rounded-md bg-surface-muted border border-border pl-8 pr-3 text-xs text-foreground placeholder:text-foreground-subtle focus:outline-none focus:ring-2 focus:ring-ring"
               />
             </div>
-            <IconBtn label="Filters"><Filter className="h-3.5 w-3.5" /></IconBtn>
-            <IconBtn label="Import Leads"><Upload className="h-3.5 w-3.5" /></IconBtn>
-            <button onClick={handleCreate} className="h-8 inline-flex items-center gap-1.5 rounded-md bg-foreground text-background px-3 text-xs font-medium hover:opacity-90 transition">
+            <IconBtn label="Filters">
+              <Filter className="h-3.5 w-3.5" />
+            </IconBtn>
+            <IconBtn label="Import Leads">
+              <Upload className="h-3.5 w-3.5" />
+            </IconBtn>
+            <button
+              onClick={handleCreate}
+              className="h-8 inline-flex items-center gap-1.5 rounded-md bg-foreground text-background px-3 text-xs font-medium hover:opacity-90 transition"
+            >
               <Plus className="h-3.5 w-3.5" />
               Create Campaign
             </button>
@@ -444,7 +472,9 @@ function CampaignsPage() {
                 <div className="mt-3 rounded-md border border-border bg-surface-muted/50 px-3 py-2">
                   <div className="flex items-center gap-2 text-[11px] text-foreground-muted">
                     <Loader2 className="h-3 w-3 animate-spin" />
-                    <span className="truncate">{(liveJob?.output as any)?.stage ?? "Working…"}</span>
+                    <span className="truncate">
+                      {(liveJob?.output as any)?.stage ?? "Working…"}
+                    </span>
                     <span className="ml-auto tabular-nums">{liveJob?.progress ?? 0}%</span>
                   </div>
                   <div className="mt-1.5 h-1 rounded-full bg-surface-muted overflow-hidden">
@@ -456,36 +486,42 @@ function CampaignsPage() {
                 </div>
               )}
 
-              {aiSeq && (aiSeq.personalization_score !== undefined || aiSeq.spam_score_avg !== undefined) && (
-                <div className="mt-3 flex flex-wrap items-center gap-2 text-[11px]">
-                  {aiSeq.personalization_score !== undefined && (
-                    <span className="inline-flex items-center gap-1 rounded-md border border-border bg-surface-muted px-2 py-1 text-foreground-muted">
-                      <Sparkles className="h-3 w-3" /> Personalization {aiSeq.personalization_score}
-                    </span>
-                  )}
-                  {aiSeq.spam_score_avg !== undefined && (
-                    <span className={`inline-flex items-center gap-1 rounded-md border px-2 py-1 ${
-                      aiSeq.spam_score_avg <= 20
-                        ? "border-success/20 bg-success/10 text-success"
-                        : aiSeq.spam_score_avg <= 45
-                          ? "border-border bg-surface-muted text-foreground-muted"
-                          : "border-warning/20 bg-warning/10 text-warning"
-                    }`}>
-                      Spam risk {aiSeq.spam_score_avg}
-                    </span>
-                  )}
-                  {aiSeq.best_send_window && (
-                    <span className="inline-flex items-center gap-1 rounded-md border border-border bg-surface-muted px-2 py-1 text-foreground-muted">
-                      <Clock className="h-3 w-3" /> {aiSeq.best_send_window}
-                    </span>
-                  )}
-                  {selectedRow?.scheduled_at && (
-                    <span className="inline-flex items-center gap-1 rounded-md border border-border bg-surface-muted px-2 py-1 text-foreground-muted">
-                      <CalendarClock className="h-3 w-3" /> Scheduled {new Date(selectedRow.scheduled_at).toLocaleString()}
-                    </span>
-                  )}
-                </div>
-              )}
+              {aiSeq &&
+                (aiSeq.personalization_score !== undefined ||
+                  aiSeq.spam_score_avg !== undefined) && (
+                  <div className="mt-3 flex flex-wrap items-center gap-2 text-[11px]">
+                    {aiSeq.personalization_score !== undefined && (
+                      <span className="inline-flex items-center gap-1 rounded-md border border-border bg-surface-muted px-2 py-1 text-foreground-muted">
+                        <Sparkles className="h-3 w-3" /> Personalization{" "}
+                        {aiSeq.personalization_score}
+                      </span>
+                    )}
+                    {aiSeq.spam_score_avg !== undefined && (
+                      <span
+                        className={`inline-flex items-center gap-1 rounded-md border px-2 py-1 ${
+                          aiSeq.spam_score_avg <= 20
+                            ? "border-success/20 bg-success/10 text-success"
+                            : aiSeq.spam_score_avg <= 45
+                              ? "border-border bg-surface-muted text-foreground-muted"
+                              : "border-warning/20 bg-warning/10 text-warning"
+                        }`}
+                      >
+                        Spam risk {aiSeq.spam_score_avg}
+                      </span>
+                    )}
+                    {aiSeq.best_send_window && (
+                      <span className="inline-flex items-center gap-1 rounded-md border border-border bg-surface-muted px-2 py-1 text-foreground-muted">
+                        <Clock className="h-3 w-3" /> {aiSeq.best_send_window}
+                      </span>
+                    )}
+                    {selectedRow?.scheduled_at && (
+                      <span className="inline-flex items-center gap-1 rounded-md border border-border bg-surface-muted px-2 py-1 text-foreground-muted">
+                        <CalendarClock className="h-3 w-3" /> Scheduled{" "}
+                        {new Date(selectedRow.scheduled_at).toLocaleString()}
+                      </span>
+                    )}
+                  </div>
+                )}
 
               {aiSeq && aiSeq.steps && aiSeq.steps.length > 0 ? (
                 <div className="mt-4 space-y-1.5">
@@ -534,12 +570,13 @@ function CampaignsPage() {
               )}
             </div>
 
-
             {/* Performance */}
             <div className="rounded-xl border border-border bg-surface p-5">
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <h3 className="text-[13px] font-semibold text-foreground">Campaign Performance</h3>
+                  <h3 className="text-[13px] font-semibold text-foreground">
+                    Campaign Performance
+                  </h3>
                   <p className="text-[11px] text-foreground-subtle mt-0.5">Last 7 days</p>
                 </div>
                 <div className="text-[11px] text-foreground-subtle">Live</div>
@@ -556,7 +593,10 @@ function CampaignsPage() {
                         <div
                           key={i}
                           className="flex-1 bg-foreground/80 rounded-sm"
-                          style={{ height: `${(v / Math.max(...p.series)) * 100}%`, opacity: 0.35 + i * 0.09 }}
+                          style={{
+                            height: `${(v / Math.max(...p.series)) * 100}%`,
+                            opacity: 0.35 + i * 0.09,
+                          }}
                         />
                       ))}
                     </div>
@@ -589,7 +629,11 @@ function CampaignsPage() {
                   <div key={idx} className="px-5 py-3.5 hover:bg-surface-muted/40 transition group">
                     <div className="flex items-center gap-3">
                       <div className="h-8 w-8 rounded-full bg-surface-muted border border-border grid place-items-center text-[11px] font-medium text-foreground-muted shrink-0">
-                        {e.lead.split(" ").map((n: string) => n[0]).join("").slice(0, 2)}
+                        {e.lead
+                          .split(" ")
+                          .map((n: string) => n[0])
+                          .join("")
+                          .slice(0, 2)}
                       </div>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
@@ -601,15 +645,19 @@ function CampaignsPage() {
                             {e.company}
                           </span>
                         </div>
-                        <p className="text-[12px] text-foreground-subtle truncate">
-                          {e.subject}
-                        </p>
+                        <p className="text-[12px] text-foreground-subtle truncate">{e.subject}</p>
                       </div>
                       <ScoreChip score={e.score} />
                       <div className="hidden md:flex items-center gap-1">
-                        <MiniBtn label="Preview"><Eye className="h-3 w-3" /></MiniBtn>
-                        <MiniBtn label="Edit"><Pencil className="h-3 w-3" /></MiniBtn>
-                        <MiniBtn label="Reject"><X className="h-3 w-3" /></MiniBtn>
+                        <MiniBtn label="Preview">
+                          <Eye className="h-3 w-3" />
+                        </MiniBtn>
+                        <MiniBtn label="Edit">
+                          <Pencil className="h-3 w-3" />
+                        </MiniBtn>
+                        <MiniBtn label="Reject">
+                          <X className="h-3 w-3" />
+                        </MiniBtn>
                         <button className="h-7 inline-flex items-center gap-1 rounded-md bg-foreground text-background px-2.5 text-[11px] font-medium hover:opacity-90">
                           <CheckCircle2 className="h-3 w-3" /> Approve
                         </button>
@@ -637,7 +685,6 @@ function CampaignsPage() {
               <QuickAction icon={Copy} label="Duplicate" />
               <QuickAction icon={Download} label="Export" />
               <QuickAction icon={Archive} label="Archive" />
-
             </div>
           </div>
         </section>
@@ -659,10 +706,7 @@ function CampaignsPage() {
 
           <div className="p-3 space-y-2">
             {activity.map((a, i) => (
-              <div
-                key={i}
-                className="rounded-lg border border-border bg-surface p-3"
-              >
+              <div key={i} className="rounded-lg border border-border bg-surface p-3">
                 <div className="flex items-start gap-2">
                   <Loader2 className="h-3.5 w-3.5 text-foreground-muted animate-spin mt-0.5 shrink-0" />
                   <div className="min-w-0 flex-1">
@@ -691,12 +735,18 @@ function CampaignsPage() {
       {aiOpen && (
         <AICopilotModal
           onClose={() => setAiOpen(false)}
-          channel={aiChannel} setChannel={setAiChannel}
-          touches={aiTouches} setTouches={setAiTouches}
-          tone={aiTone} setTone={setAiTone}
-          goal={aiGoal} setGoal={setAiGoal}
-          ctx={aiCtx} setCtx={setAiCtx}
-          ab={aiAB} setAB={setAiAB}
+          channel={aiChannel}
+          setChannel={setAiChannel}
+          touches={aiTouches}
+          setTouches={setAiTouches}
+          tone={aiTone}
+          setTone={setAiTone}
+          goal={aiGoal}
+          setGoal={setAiGoal}
+          ctx={aiCtx}
+          setCtx={setAiCtx}
+          ab={aiAB}
+          setAB={setAiAB}
           onGenerate={() => handleGenerate(true)}
           pending={genCampaign.isPending}
         />
@@ -704,7 +754,6 @@ function CampaignsPage() {
     </div>
   );
 }
-
 
 /* ------------------------------ components ------------------------------ */
 
@@ -715,7 +764,9 @@ function StatusPill({ status }: { status: Campaign["status"] }) {
     Draft: "bg-surface-muted text-foreground-muted border-border",
   } as const;
   return (
-    <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium ${map[status]}`}>
+    <span
+      className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium ${map[status]}`}
+    >
       <CircleDot className="h-2.5 w-2.5" />
       {status}
     </span>
@@ -741,16 +792,22 @@ function Meta({ icon: Icon, value }: { icon: typeof Building2; value: string }) 
   );
 }
 
-function Stat({ label, value, icon: Icon }: { label: string; value: string; icon: typeof Building2 }) {
+function Stat({
+  label,
+  value,
+  icon: Icon,
+}: {
+  label: string;
+  value: string;
+  icon: typeof Building2;
+}) {
   return (
     <div>
       <div className="flex items-center gap-1.5 text-[11px] text-foreground-subtle">
         <Icon className="h-3 w-3" />
         {label}
       </div>
-      <div className="mt-1 text-[18px] font-semibold text-foreground tracking-tight">
-        {value}
-      </div>
+      <div className="mt-1 text-[18px] font-semibold text-foreground tracking-tight">{value}</div>
     </div>
   );
 }
@@ -788,7 +845,9 @@ function ScoreChip({ score }: { score: number }) {
         ? "text-foreground bg-surface-muted border-border"
         : "text-warning bg-warning/10 border-warning/20";
   return (
-    <div className={`hidden sm:flex items-center gap-1 rounded-md border px-2 py-1 text-[11px] font-medium ${tone}`}>
+    <div
+      className={`hidden sm:flex items-center gap-1 rounded-md border px-2 py-1 text-[11px] font-medium ${tone}`}
+    >
       <Sparkles className="h-3 w-3" />
       {score}
     </div>
@@ -805,13 +864,24 @@ function QuickAction({ icon: Icon, label }: { icon: typeof Building2; label: str
 }
 
 function SequenceStep({
-  idx, total, step,
+  idx,
+  total,
+  step,
 }: {
-  idx: number; total: number;
+  idx: number;
+  total: number;
   step: {
-    step: number; day_offset: number; channel: "email" | "linkedin"; type?: string;
-    subject?: string; subject_variants?: string[]; body: string;
-    cta?: string; cta_suggestions?: string[]; best_send_time?: string; spam_score?: number;
+    step: number;
+    day_offset: number;
+    channel: "email" | "linkedin";
+    type?: string;
+    subject?: string;
+    subject_variants?: string[];
+    body: string;
+    cta?: string;
+    cta_suggestions?: string[];
+    best_send_time?: string;
+    spam_score?: number;
     variant_b?: { subject?: string; body: string; cta?: string } | null;
   };
 }) {
@@ -841,13 +911,17 @@ function SequenceStep({
               </span>
             )}
             {typeof step.spam_score === "number" && (
-              <span className={`text-[10px] rounded px-1.5 py-0.5 border ${
-                step.spam_score <= 20
-                  ? "border-success/20 bg-success/10 text-success"
-                  : step.spam_score <= 45
-                    ? "border-border bg-surface-muted text-foreground-muted"
-                    : "border-warning/20 bg-warning/10 text-warning"
-              }`}>Spam {step.spam_score}</span>
+              <span
+                className={`text-[10px] rounded px-1.5 py-0.5 border ${
+                  step.spam_score <= 20
+                    ? "border-success/20 bg-success/10 text-success"
+                    : step.spam_score <= 45
+                      ? "border-border bg-surface-muted text-foreground-muted"
+                      : "border-warning/20 bg-warning/10 text-warning"
+                }`}
+              >
+                Spam {step.spam_score}
+              </span>
             )}
             {step.variant_b && (
               <button
@@ -858,18 +932,23 @@ function SequenceStep({
               </button>
             )}
           </div>
-          {!isLI && (active.subject) && (
+          {!isLI && active.subject && (
             <p className="mt-1 text-[12px] font-medium text-foreground truncate">
               {active.subject}
             </p>
           )}
-          <p className={`text-[11px] text-foreground-subtle ${open ? "whitespace-pre-wrap" : "line-clamp-2"}`}>
+          <p
+            className={`text-[11px] text-foreground-subtle ${open ? "whitespace-pre-wrap" : "line-clamp-2"}`}
+          >
             {active.body}
           </p>
           {open && (
             <div className="mt-2 space-y-1.5 text-[11px] text-foreground-muted">
               {active.cta && (
-                <div><span className="text-foreground-subtle">CTA · </span>{active.cta}</div>
+                <div>
+                  <span className="text-foreground-subtle">CTA · </span>
+                  {active.cta}
+                </div>
               )}
               {step.cta_suggestions && step.cta_suggestions.length > 0 && (
                 <div className="text-foreground-subtle">
@@ -904,17 +983,35 @@ function AICopilotModal(props: {
   onClose: () => void;
   channel: "email" | "linkedin" | "multi";
   setChannel: (v: "email" | "linkedin" | "multi") => void;
-  touches: number; setTouches: (n: number) => void;
-  tone: string; setTone: (v: string) => void;
-  goal: string; setGoal: (v: string) => void;
-  ctx: string; setCtx: (v: string) => void;
-  ab: boolean; setAB: (v: boolean) => void;
+  touches: number;
+  setTouches: (n: number) => void;
+  tone: string;
+  setTone: (v: string) => void;
+  goal: string;
+  setGoal: (v: string) => void;
+  ctx: string;
+  setCtx: (v: string) => void;
+  ab: boolean;
+  setAB: (v: boolean) => void;
   onGenerate: () => void;
   pending: boolean;
 }) {
   const {
-    onClose, channel, setChannel, touches, setTouches, tone, setTone,
-    goal, setGoal, ctx, setCtx, ab, setAB, onGenerate, pending,
+    onClose,
+    channel,
+    setChannel,
+    touches,
+    setTouches,
+    tone,
+    setTone,
+    goal,
+    setGoal,
+    ctx,
+    setCtx,
+    ab,
+    setAB,
+    onGenerate,
+    pending,
   } = props;
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-background/70 backdrop-blur-sm px-4">
@@ -948,7 +1045,10 @@ function AICopilotModal(props: {
           </Field>
           <Field label={`Touches · ${touches}`}>
             <input
-              type="range" min={3} max={7} value={touches}
+              type="range"
+              min={3}
+              max={7}
+              value={touches}
               onChange={(e) => setTouches(parseInt(e.target.value, 10))}
               className="w-full"
             />
@@ -972,14 +1072,16 @@ function AICopilotModal(props: {
           </Field>
           <Field label="Goal (optional)">
             <input
-              value={goal} onChange={(e) => setGoal(e.target.value)}
+              value={goal}
+              onChange={(e) => setGoal(e.target.value)}
               placeholder="e.g. book a discovery call with VP Eng"
               className="w-full h-9 rounded-md bg-surface-muted border border-border px-3 text-[12px] text-foreground placeholder:text-foreground-subtle focus:outline-none focus:ring-2 focus:ring-ring"
             />
           </Field>
           <Field label="Extra context (optional)">
             <textarea
-              value={ctx} onChange={(e) => setCtx(e.target.value)}
+              value={ctx}
+              onChange={(e) => setCtx(e.target.value)}
               rows={3}
               placeholder="Angles to emphasize, competitors to mention, do-not-say list…"
               className="w-full rounded-md bg-surface-muted border border-border px-3 py-2 text-[12px] text-foreground placeholder:text-foreground-subtle focus:outline-none focus:ring-2 focus:ring-ring"
@@ -991,7 +1093,10 @@ function AICopilotModal(props: {
           </label>
         </div>
         <div className="flex items-center justify-end gap-2 px-5 py-3 border-t border-border">
-          <button onClick={onClose} className="h-8 px-3 rounded-md border border-border text-[12px] text-foreground-muted hover:text-foreground">
+          <button
+            onClick={onClose}
+            className="h-8 px-3 rounded-md border border-border text-[12px] text-foreground-muted hover:text-foreground"
+          >
             Cancel
           </button>
           <button
@@ -999,7 +1104,11 @@ function AICopilotModal(props: {
             disabled={pending}
             className="h-8 inline-flex items-center gap-1.5 rounded-md bg-foreground text-background px-3 text-[12px] font-medium hover:opacity-90 disabled:opacity-50"
           >
-            {pending ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
+            {pending ? (
+              <Loader2 className="h-3 w-3 animate-spin" />
+            ) : (
+              <Sparkles className="h-3 w-3" />
+            )}
             Generate
           </button>
         </div>
@@ -1011,7 +1120,9 @@ function AICopilotModal(props: {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <div className="text-[11px] uppercase tracking-wider text-foreground-subtle font-medium mb-1.5">{label}</div>
+      <div className="text-[11px] uppercase tracking-wider text-foreground-subtle font-medium mb-1.5">
+        {label}
+      </div>
       {children}
     </div>
   );

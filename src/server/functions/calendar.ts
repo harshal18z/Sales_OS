@@ -63,7 +63,10 @@ export const calendarListEvents = createServerFn({ method: "POST" })
     params.set("timeMin", data.timeMin ?? new Date().toISOString());
     if (data.timeMax) params.set("timeMax", data.timeMax);
     const calId = data.calendarId ?? "primary";
-    const res = (await calFetch(key, `/calendars/${encodeURIComponent(calId)}/events?${params}`)) as {
+    const res = (await calFetch(
+      key,
+      `/calendars/${encodeURIComponent(calId)}/events?${params}`,
+    )) as {
       items?: Array<{
         id: string;
         summary?: string;
@@ -75,7 +78,10 @@ export const calendarListEvents = createServerFn({ method: "POST" })
         hangoutLink?: string;
         htmlLink?: string;
         status?: string;
-        reminders?: { overrides?: Array<{ method: string; minutes: number }>; useDefault?: boolean };
+        reminders?: {
+          overrides?: Array<{ method: string; minutes: number }>;
+          useDefault?: boolean;
+        };
       }>;
     };
     return { events: res.items ?? [] };

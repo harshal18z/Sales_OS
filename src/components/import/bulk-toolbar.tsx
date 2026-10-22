@@ -20,9 +20,7 @@ export function BulkToolbar({
       >
         <X className="h-3 w-3" />
       </button>
-      <span className="text-[12px] text-foreground font-medium tabular-nums">
-        {count} selected
-      </span>
+      <span className="text-[12px] text-foreground font-medium tabular-nums">{count} selected</span>
       <div className="h-4 w-px bg-border" />
       <div className="flex items-center gap-1.5 flex-wrap">{children}</div>
     </div>

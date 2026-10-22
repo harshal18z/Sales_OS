@@ -26,7 +26,6 @@ export interface NotificationRow {
   created_at: string;
 }
 
-
 export function useNotifications(limit = 30) {
   const { user } = useAuth();
   const { workspaceId } = useWorkspace();

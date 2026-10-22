@@ -28,7 +28,11 @@ export function useWorkspaceMembers() {
         .select("id, full_name, email")
         .in("id", ids);
       const pmap = new Map<string, { full_name: string | null; email: string | null }>();
-      for (const p of ((profs ?? []) as { id: string; full_name: string | null; email: string | null }[])) {
+      for (const p of (profs ?? []) as {
+        id: string;
+        full_name: string | null;
+        email: string | null;
+      }[]) {
         pmap.set(p.id, { full_name: p.full_name, email: p.email });
       }
       return rows.map((m) => ({

@@ -7,7 +7,10 @@ export const Route = createFileRoute("/privacy")({
       { title: "Privacy Policy — SalesOS AI" },
       { name: "description", content: "How SalesOS AI collects, uses, and protects your data." },
       { property: "og:title", content: "Privacy Policy — SalesOS AI" },
-      { property: "og:description", content: "How SalesOS AI collects, uses, and protects your data." },
+      {
+        property: "og:description",
+        content: "How SalesOS AI collects, uses, and protects your data.",
+      },
     ],
   }),
   component: PrivacyPage,
@@ -21,7 +24,10 @@ export function LegalShell({ title, subtitle }: { title: string; subtitle: strin
   return (
     <div className="min-h-screen bg-background text-foreground">
       <header className="h-16 px-6 flex items-center border-b border-border">
-        <Link to="/" className="inline-flex items-center gap-1.5 text-[13px] text-foreground-muted hover:text-foreground">
+        <Link
+          to="/"
+          className="inline-flex items-center gap-1.5 text-[13px] text-foreground-muted hover:text-foreground"
+        >
           <ArrowLeft className="h-3.5 w-3.5" /> Back to home
         </Link>
       </header>

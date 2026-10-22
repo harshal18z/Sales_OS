@@ -9,13 +9,7 @@ import {
   useReducedMotion,
   AnimatePresence,
 } from "framer-motion";
-import {
-  ArrowRight,
-  ArrowUpRight,
-  Check,
-  ChevronDown,
-  Sparkles,
-} from "lucide-react";
+import { ArrowRight, ArrowUpRight, Check, ChevronDown, Sparkles } from "lucide-react";
 
 import dashboardImg from "@/assets/landing/dashboard.png";
 import researchImg from "@/assets/landing/research.png";
@@ -122,8 +116,7 @@ function AtmosphericBackground() {
           backgroundImage:
             "linear-gradient(oklch(0.98_0_0/0.06) 1px, transparent 1px), linear-gradient(90deg, oklch(0.98_0_0/0.06) 1px, transparent 1px)",
           backgroundSize: "56px 56px",
-          maskImage:
-            "radial-gradient(ellipse at center, black 40%, transparent 80%)",
+          maskImage: "radial-gradient(ellipse at center, black 40%, transparent 80%)",
         }}
       />
       {/* Noise */}
@@ -162,10 +155,18 @@ function Nav() {
           <span className="text-[14px] font-semibold tracking-tight">SalesOS AI</span>
         </Link>
         <nav className="hidden md:flex items-center gap-8 text-[13px] text-foreground-muted">
-          <a href="#story" className="hover:text-foreground transition">Product</a>
-          <a href="#compare" className="hover:text-foreground transition">Why SalesOS</a>
-          <a href="#integrations" className="hover:text-foreground transition">Integrations</a>
-          <a href="#faq" className="hover:text-foreground transition">FAQ</a>
+          <a href="#story" className="hover:text-foreground transition">
+            Product
+          </a>
+          <a href="#compare" className="hover:text-foreground transition">
+            Why SalesOS
+          </a>
+          <a href="#integrations" className="hover:text-foreground transition">
+            Integrations
+          </a>
+          <a href="#faq" className="hover:text-foreground transition">
+            FAQ
+          </a>
         </nav>
         <div className="flex items-center gap-2">
           <Link
@@ -239,7 +240,8 @@ function Hero() {
           transition={{ duration: 0.9, delay: 0.15 }}
           className="mx-auto mt-8 max-w-xl text-center text-[15px] md:text-[17px] leading-relaxed text-foreground-muted"
         >
-          Researches companies. Finds buyers. Writes personalized outreach. Books meetings. Works 24/7.
+          Researches companies. Finds buyers. Writes personalized outreach. Books meetings. Works
+          24/7.
         </motion.p>
 
         <motion.div
@@ -345,7 +347,11 @@ function WorkflowStage() {
                     <div className="min-w-0 flex-1">
                       <div
                         className={`truncate ${
-                          done ? "text-foreground-muted" : active ? "text-foreground" : "text-foreground-subtle"
+                          done
+                            ? "text-foreground-muted"
+                            : active
+                              ? "text-foreground"
+                              : "text-foreground-subtle"
                         }`}
                       >
                         {done ? s.done : s.label + (active ? "…" : "")}
@@ -431,7 +437,11 @@ function CanvasResearch() {
         <div className="text-[11px] uppercase tracking-[0.14em] text-foreground-subtle font-mono mb-2">
           Acme Corp
         </div>
-        {["Enterprise SaaS · 2,400 employees", "Series D · $180M funding", "Recently launched AI platform"].map((t, i) => (
+        {[
+          "Enterprise SaaS · 2,400 employees",
+          "Series D · $180M funding",
+          "Recently launched AI platform",
+        ].map((t, i) => (
           <motion.div
             key={t}
             initial={{ opacity: 0, x: -10 }}
@@ -467,7 +477,10 @@ function CanvasContacts() {
             className="h-8 w-8 rounded-full grid place-items-center text-[11px] font-medium text-white"
             style={{ background: `oklch(0.4 0.15 ${220 + i * 30})` }}
           >
-            {p.n.split(" ").map((x) => x[0]).join("")}
+            {p.n
+              .split(" ")
+              .map((x) => x[0])
+              .join("")}
           </div>
           <div className="flex-1 min-w-0">
             <div className="text-[13px] text-foreground truncate">{p.n}</div>
@@ -493,9 +506,7 @@ function CanvasEmail() {
       <div className="text-[11px] uppercase tracking-[0.14em] text-foreground-subtle font-mono mb-2">
         To: sarah@acme.com
       </div>
-      <div className="text-[13px] text-foreground font-medium mb-3">
-        Congrats on the Series D
-      </div>
+      <div className="text-[13px] text-foreground font-medium mb-3">Congrats on the Series D</div>
       <div className="space-y-1">
         {lines.map((l, i) => (
           <motion.div
@@ -586,7 +597,16 @@ function CanvasMeeting() {
 /* ---------------- Logo strip ---------------- */
 
 function LogoStrip() {
-  const logos = ["Google", "Gmail", "Outlook", "Slack", "HubSpot", "Salesforce", "Apollo", "Zapier"];
+  const logos = [
+    "Google",
+    "Gmail",
+    "Outlook",
+    "Slack",
+    "HubSpot",
+    "Salesforce",
+    "Apollo",
+    "Zapier",
+  ];
   return (
     <section className="relative py-16">
       <div className="mx-auto max-w-7xl px-6">
@@ -608,14 +628,54 @@ function LogoStrip() {
 /* ---------------- Scroll Story ---------------- */
 
 const STORY = [
-  { kicker: "01 · Wake", title: "AI wakes up when your team sleeps.", copy: "Overnight, agents scan your pipeline, prioritize accounts, and stage the day.", img: dashboardImg },
-  { kicker: "02 · Research", title: "Deep research on every account.", copy: "Live web research, structured intelligence, and ICP fit — all cited.", img: researchImg },
-  { kicker: "03 · Intelligence", title: "Company intelligence, connected.", copy: "Every signal linked to the accounts and people that matter.", img: companiesImg },
-  { kicker: "04 · Buyers", title: "Discovers real decision makers.", copy: "Verified contacts with confidence scores. Never fabricated.", img: leadsImg },
-  { kicker: "05 · Outreach", title: "Writes outreach that sounds like you.", copy: "Personalized on research, tuned to tone, aware of context.", img: emailsImg },
-  { kicker: "06 · Campaigns", title: "Launches multi-touch campaigns.", copy: "Sequences, A/B variants, spam-safe — approved by you, sent by AI.", img: campaignsImg },
-  { kicker: "07 · Meetings", title: "Books meetings and preps briefs.", copy: "Handles scheduling, prep docs, and follow-ups end-to-end.", img: meetingsImg },
-  { kicker: "08 · Signal", title: "Every reply becomes revenue signal.", copy: "AI classifies intent, updates CRM, and forecasts what's next.", img: analyticsImg },
+  {
+    kicker: "01 · Wake",
+    title: "AI wakes up when your team sleeps.",
+    copy: "Overnight, agents scan your pipeline, prioritize accounts, and stage the day.",
+    img: dashboardImg,
+  },
+  {
+    kicker: "02 · Research",
+    title: "Deep research on every account.",
+    copy: "Live web research, structured intelligence, and ICP fit — all cited.",
+    img: researchImg,
+  },
+  {
+    kicker: "03 · Intelligence",
+    title: "Company intelligence, connected.",
+    copy: "Every signal linked to the accounts and people that matter.",
+    img: companiesImg,
+  },
+  {
+    kicker: "04 · Buyers",
+    title: "Discovers real decision makers.",
+    copy: "Verified contacts with confidence scores. Never fabricated.",
+    img: leadsImg,
+  },
+  {
+    kicker: "05 · Outreach",
+    title: "Writes outreach that sounds like you.",
+    copy: "Personalized on research, tuned to tone, aware of context.",
+    img: emailsImg,
+  },
+  {
+    kicker: "06 · Campaigns",
+    title: "Launches multi-touch campaigns.",
+    copy: "Sequences, A/B variants, spam-safe — approved by you, sent by AI.",
+    img: campaignsImg,
+  },
+  {
+    kicker: "07 · Meetings",
+    title: "Books meetings and preps briefs.",
+    copy: "Handles scheduling, prep docs, and follow-ups end-to-end.",
+    img: meetingsImg,
+  },
+  {
+    kicker: "08 · Signal",
+    title: "Every reply becomes revenue signal.",
+    copy: "AI classifies intent, updates CRM, and forecasts what's next.",
+    img: analyticsImg,
+  },
 ];
 
 function ScrollStory() {
@@ -637,13 +697,7 @@ function ScrollStory() {
   );
 }
 
-function StoryPanel({
-  index,
-  data,
-}: {
-  index: number;
-  data: (typeof STORY)[number];
-}) {
+function StoryPanel({ index, data }: { index: number; data: (typeof STORY)[number] }) {
   const ref = useRef<HTMLDivElement>(null);
   const reduce = useReducedMotion();
   const { scrollYProgress } = useScroll({
@@ -704,15 +758,7 @@ function StoryPanel({
   );
 }
 
-function SectionHeader({
-  kicker,
-  title,
-  copy,
-}: {
-  kicker: string;
-  title: string;
-  copy?: string;
-}) {
+function SectionHeader({ kicker, title, copy }: { kicker: string; title: string; copy?: string }) {
   return (
     <div className="mx-auto max-w-2xl text-center">
       <div className="text-[11px] uppercase tracking-[0.2em] text-[oklch(0.75_0.15_260)] font-mono">
@@ -729,7 +775,14 @@ function SectionHeader({
 /* ---------------- Comparison ---------------- */
 
 function Comparison() {
-  const traditional = ["Research accounts", "Enrich contacts", "Write email", "Send follow-up", "Book meeting", "Update CRM"];
+  const traditional = [
+    "Research accounts",
+    "Enrich contacts",
+    "Write email",
+    "Send follow-up",
+    "Book meeting",
+    "Update CRM",
+  ];
   return (
     <section id="compare" className="relative py-32">
       <div className="mx-auto max-w-6xl px-6">
@@ -788,8 +841,18 @@ function Comparison() {
 
 function Integrations() {
   const items = [
-    "Google", "Gmail", "Outlook", "Slack", "HubSpot", "Salesforce",
-    "Pipedrive", "Apollo", "Zapier", "Supabase", "Notion", "Linear",
+    "Google",
+    "Gmail",
+    "Outlook",
+    "Slack",
+    "HubSpot",
+    "Salesforce",
+    "Pipedrive",
+    "Apollo",
+    "Zapier",
+    "Supabase",
+    "Notion",
+    "Linear",
   ];
   return (
     <section id="integrations" className="relative py-32">
@@ -937,7 +1000,9 @@ function FinalCTA() {
             transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
             className="relative text-[48px] md:text-[88px] leading-[0.98] tracking-[-0.04em] font-semibold bg-gradient-to-b from-white to-white/50 bg-clip-text text-transparent"
           >
-            Let AI build<br />your pipeline.
+            Let AI build
+            <br />
+            your pipeline.
           </motion.h2>
           <div className="relative mt-10 flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link
@@ -977,11 +1042,21 @@ function Footer() {
           </span>
         </div>
         <nav className="flex flex-wrap gap-x-6 gap-y-2 text-[13px] text-foreground-muted">
-          <Link to="/privacy" className="hover:text-foreground transition">Privacy</Link>
-          <Link to="/terms" className="hover:text-foreground transition">Terms</Link>
-          <Link to="/security" className="hover:text-foreground transition">Security</Link>
-          <Link to="/login" className="hover:text-foreground transition">Sign in</Link>
-          <Link to="/signup" className="hover:text-foreground transition">Start free</Link>
+          <Link to="/privacy" className="hover:text-foreground transition">
+            Privacy
+          </Link>
+          <Link to="/terms" className="hover:text-foreground transition">
+            Terms
+          </Link>
+          <Link to="/security" className="hover:text-foreground transition">
+            Security
+          </Link>
+          <Link to="/login" className="hover:text-foreground transition">
+            Sign in
+          </Link>
+          <Link to="/signup" className="hover:text-foreground transition">
+            Start free
+          </Link>
         </nav>
       </div>
     </footer>

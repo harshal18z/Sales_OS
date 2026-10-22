@@ -76,9 +76,7 @@ function WorkspaceNewPage() {
       <div>
         <div className="inline-flex items-center gap-1.5 h-[22px] px-2 rounded-full border border-border bg-surface">
           <Sparkles className="h-3 w-3 text-[color:var(--ai)]" />
-          <span className="text-[11.5px] font-medium text-[color:var(--ai)]">
-            New workspace
-          </span>
+          <span className="text-[11.5px] font-medium text-[color:var(--ai)]">New workspace</span>
         </div>
         <h1 className="text-heading mt-4">Create your workspace</h1>
         <p className="text-body text-foreground-muted mt-2">
@@ -101,9 +99,7 @@ function WorkspaceNewPage() {
 
           <Field label="Workspace URL" hint="Lowercase letters, numbers and dashes.">
             <div className="flex items-center gap-2 h-10 px-3 rounded-[10px] border border-border bg-surface focus-within:border-foreground/40 focus-within:ring-2 focus-within:ring-foreground/5 transition-all">
-              <span className="text-[13px] text-foreground-subtle font-mono">
-                salesos.ai/
-              </span>
+              <span className="text-[13px] text-foreground-subtle font-mono">salesos.ai/</span>
               <input
                 value={effectiveSlug}
                 onChange={(e) => {

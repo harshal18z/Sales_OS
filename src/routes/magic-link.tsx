@@ -77,7 +77,10 @@ function MagicLinkPage() {
           </form>
           <p className="text-caption text-center mt-8">
             Prefer a password?{" "}
-            <Link to="/login" className="text-foreground font-medium hover:underline underline-offset-4">
+            <Link
+              to="/login"
+              className="text-foreground font-medium hover:underline underline-offset-4"
+            >
               Sign in with password
             </Link>
           </p>

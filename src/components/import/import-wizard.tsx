@@ -1,5 +1,15 @@
 import { useCallback, useMemo, useRef, useState } from "react";
-import { AlertCircle, ArrowLeft, ArrowRight, CheckCircle2, Download, FileText, Sparkles, Upload, X } from "lucide-react";
+import {
+  AlertCircle,
+  ArrowLeft,
+  ArrowRight,
+  CheckCircle2,
+  Download,
+  FileText,
+  Sparkles,
+  Upload,
+  X,
+} from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useWorkspace } from "@/hooks/use-workspace";
@@ -69,7 +79,10 @@ export function ImportWizardModal({
     const m: Record<string, number> = {};
     for (const f of spec.fields) {
       const idx = mapping[f.key];
-      if (idx == null) { m[f.key] = dataRows.length; continue; }
+      if (idx == null) {
+        m[f.key] = dataRows.length;
+        continue;
+      }
       m[f.key] = dataRows.reduce((acc, r) => acc + ((r[idx] ?? "").trim() === "" ? 1 : 0), 0);
     }
     return m;
@@ -82,8 +95,9 @@ export function ImportWizardModal({
     const seen = new Set<string>();
     let dups = 0;
     for (const r of dataRows) {
-      const key = (idxEmail != null ? normalizeEmail(r[idxEmail]) : null)
-        ?? (idxDomain != null ? normalizeDomain(r[idxDomain]) : null);
+      const key =
+        (idxEmail != null ? normalizeEmail(r[idxEmail]) : null) ??
+        (idxDomain != null ? normalizeDomain(r[idxDomain]) : null);
       if (!key) continue;
       if (seen.has(key)) dups++;
       else seen.add(key);
@@ -94,14 +108,20 @@ export function ImportWizardModal({
   const canNext = useMemo(() => {
     if (step === 1) return rows.length > 0;
     if (step === 2) return dataRows.length > 0;
-    if (step === 3) return spec.fields.filter((f) => f.required).every((f) => mapping[f.key] != null);
+    if (step === 3)
+      return spec.fields.filter((f) => f.required).every((f) => mapping[f.key] != null);
     return true;
   }, [step, rows.length, dataRows.length, mapping, spec.fields]);
 
   function reset() {
-    setRows([]); setHeaders([]); setMapping({}); setErrors([]);
+    setRows([]);
+    setHeaders([]);
+    setMapping({});
+    setErrors([]);
     setProgress({ done: 0, total: 0, inserted: 0, failed: 0 });
-    setStep(1); setFinished(false); setRunning(false);
+    setStep(1);
+    setFinished(false);
+    setRunning(false);
     cancelRef.current = false;
     if (inputRef.current) inputRef.current.value = "";
   }
@@ -112,19 +132,26 @@ export function ImportWizardModal({
     onClose();
   }
 
-  const handleFile = useCallback(async (file: File) => {
-    const text = await file.text();
-    const parsed = parseCSV(text);
-    if (parsed.length < 2) { toast.error("CSV needs a header row and at least one data row."); return; }
-    setRows(parsed);
-    setHeaders(parsed[0]);
-    setMapping(autoMap(parsed[0], spec));
-    setStep(2);
-  }, [spec]);
+  const handleFile = useCallback(
+    async (file: File) => {
+      const text = await file.text();
+      const parsed = parseCSV(text);
+      if (parsed.length < 2) {
+        toast.error("CSV needs a header row and at least one data row.");
+        return;
+      }
+      setRows(parsed);
+      setHeaders(parsed[0]);
+      setMapping(autoMap(parsed[0], spec));
+      setStep(2);
+    },
+    [spec],
+  );
 
   async function runImport() {
     if (!workspaceId) return;
-    setRunning(true); setFinished(false);
+    setRunning(true);
+    setFinished(false);
     setErrors([]);
     setProgress({ done: 0, total: dataRows.length, inserted: 0, failed: 0 });
 
@@ -148,21 +175,37 @@ export function ImportWizardModal({
     const existingKeys = new Set<string>();
     if (clean.detectDuplicates) {
       if (entity === "companies") {
-        const { data } = await supabase.from("companies").select("domain").eq("workspace_id", workspaceId).is("deleted_at", null);
-        for (const r of (data ?? []) as { domain: string | null }[]) if (r.domain) existingKeys.add(r.domain.toLowerCase());
+        const { data } = await supabase
+          .from("companies")
+          .select("domain")
+          .eq("workspace_id", workspaceId)
+          .is("deleted_at", null);
+        for (const r of (data ?? []) as { domain: string | null }[])
+          if (r.domain) existingKeys.add(r.domain.toLowerCase());
       } else if (entity === "contacts") {
-        const { data } = await supabase.from("contacts").select("email").eq("workspace_id", workspaceId).is("deleted_at", null);
-        for (const r of (data ?? []) as { email: string | null }[]) if (r.email) existingKeys.add(r.email.toLowerCase());
+        const { data } = await supabase
+          .from("contacts")
+          .select("email")
+          .eq("workspace_id", workspaceId)
+          .is("deleted_at", null);
+        for (const r of (data ?? []) as { email: string | null }[])
+          if (r.email) existingKeys.add(r.email.toLowerCase());
       }
     }
 
-    const collected: { payload: Record<string, unknown>; raw: Record<string, string>; row: number }[] = [];
+    const collected: {
+      payload: Record<string, unknown>;
+      raw: Record<string, string>;
+      row: number;
+    }[] = [];
     const failedLocal: ErrorRow[] = [];
 
     for (let i = 0; i < dataRows.length; i++) {
       const r = dataRows[i];
       const raw: Record<string, string> = {};
-      headers.forEach((h, j) => { raw[h] = r[j] ?? ""; });
+      headers.forEach((h, j) => {
+        raw[h] = r[j] ?? "";
+      });
       const payload: Record<string, unknown> = { workspace_id: workspaceId };
 
       for (const f of spec.fields) {
@@ -170,9 +213,12 @@ export function ImportWizardModal({
         if (idx == null) continue;
         const cell = r[idx];
         if (cell == null) continue;
-        const value = clean.normalize ? coerceValue(f, cell) : (cell.trim() || null);
+        const value = clean.normalize ? coerceValue(f, cell) : cell.trim() || null;
         if (value == null || value === "") continue;
-        if (f.key === "company_name" || f.key === "company_domain") { payload[f.key] = value; continue; }
+        if (f.key === "company_name" || f.key === "company_domain") {
+          payload[f.key] = value;
+          continue;
+        }
         payload[f.key] = value;
       }
 
@@ -188,7 +234,8 @@ export function ImportWizardModal({
         const cName = normalizeString(payload.company_name as string | null | undefined);
         let companyId: string | null = null;
         if (cDom && companyByDomain.has(cDom)) companyId = companyByDomain.get(cDom)!;
-        else if (cName && companyByName.has(cName.toLowerCase())) companyId = companyByName.get(cName.toLowerCase())!;
+        else if (cName && companyByName.has(cName.toLowerCase()))
+          companyId = companyByName.get(cName.toLowerCase())!;
         else if (clean.autoLinkCompanies && (cDom || cName)) {
           const { data: created, error } = await supabase
             .from("companies")
@@ -207,10 +254,12 @@ export function ImportWizardModal({
       }
 
       // Required field validation.
-      const missing = spec.fields.filter((f) => f.required).find((f) => {
-        if (f.key === "company_name" && entity === "leads") return !payload.company_id;
-        return payload[f.key] == null || payload[f.key] === "";
-      });
+      const missing = spec.fields
+        .filter((f) => f.required)
+        .find((f) => {
+          if (f.key === "company_name" && entity === "leads") return !payload.company_id;
+          return payload[f.key] == null || payload[f.key] === "";
+        });
       if (missing) {
         failedLocal.push({ row: i + 2, reason: `Missing required field: ${missing.label}`, raw });
         continue;
@@ -218,14 +267,19 @@ export function ImportWizardModal({
 
       // In-batch and existing duplicate detection.
       if (clean.detectDuplicates) {
-        const dupKey = entity === "companies"
-          ? (payload.domain as string | undefined)
-          : entity === "contacts"
-            ? (payload.email as string | undefined)
-            : null;
+        const dupKey =
+          entity === "companies"
+            ? (payload.domain as string | undefined)
+            : entity === "contacts"
+              ? (payload.email as string | undefined)
+              : null;
         if (dupKey) {
           if (existingKeys.has(dupKey)) {
-            failedLocal.push({ row: i + 2, reason: `Duplicate ${entity === "companies" ? "domain" : "email"}: ${dupKey}`, raw });
+            failedLocal.push({
+              row: i + 2,
+              reason: `Duplicate ${entity === "companies" ? "domain" : "email"}: ${dupKey}`,
+              raw,
+            });
             continue;
           }
           existingKeys.add(dupKey);
@@ -250,7 +304,12 @@ export function ImportWizardModal({
       } else {
         inserted += data?.length ?? chunk.length;
       }
-      setProgress({ done: Math.min(collected.length, i + chunk.length), total: dataRows.length, inserted, failed: failedLocal.length });
+      setProgress({
+        done: Math.min(collected.length, i + chunk.length),
+        total: dataRows.length,
+        inserted,
+        failed: failedLocal.length,
+      });
       // Yield to UI
       await new Promise((r) => setTimeout(r, 10));
     }
@@ -273,7 +332,12 @@ export function ImportWizardModal({
       });
     }
 
-    setProgress({ done: dataRows.length, total: dataRows.length, inserted, failed: failedLocal.length });
+    setProgress({
+      done: dataRows.length,
+      total: dataRows.length,
+      inserted,
+      failed: failedLocal.length,
+    });
     setErrors(failedLocal);
     setRunning(false);
     setFinished(true);
@@ -288,15 +352,21 @@ export function ImportWizardModal({
     if (errors.length === 0) return;
     // Retry only rows whose errors weren't semantic (skip missing required / dup).
     const retryable = errors.filter((e) => !/^Missing required|^Duplicate/i.test(e.reason));
-    if (retryable.length === 0) { toast.info("No retryable rows — errors are validation issues, not transient."); return; }
+    if (retryable.length === 0) {
+      toast.info("No retryable rows — errors are validation issues, not transient.");
+      return;
+    }
     setRunning(true);
     let inserted = 0;
-    const stillFailed: ErrorRow[] = errors.filter((e) => /^Missing required|^Duplicate/i.test(e.reason));
+    const stillFailed: ErrorRow[] = errors.filter((e) =>
+      /^Missing required|^Duplicate/i.test(e.reason),
+    );
     for (const e of retryable) {
       // Rebuild minimal payload from raw + mapping.
       const payload: Record<string, unknown> = { workspace_id: workspaceId };
       for (const f of spec.fields) {
-        const idx = mapping[f.key]; if (idx == null) continue;
+        const idx = mapping[f.key];
+        if (idx == null) continue;
         const cell = headers[idx] ? e.raw[headers[idx]] : "";
         if (!cell) continue;
         const v = clean.normalize ? coerceValue(f, cell) : cell.trim();
@@ -330,7 +400,15 @@ export function ImportWizardModal({
           <div className="space-y-3">
             <div className="flex items-center gap-2">
               <label className="text-[12px] text-foreground-muted">Entity</label>
-              <Select value={entity} onChange={(e) => { setEntity(e.target.value as EntityKey); setRows([]); setHeaders([]); setMapping({}); }}>
+              <Select
+                value={entity}
+                onChange={(e) => {
+                  setEntity(e.target.value as EntityKey);
+                  setRows([]);
+                  setHeaders([]);
+                  setMapping({});
+                }}
+              >
                 <option value="companies">Companies</option>
                 <option value="contacts">Contacts</option>
                 <option value="leads">Leads</option>
@@ -340,14 +418,21 @@ export function ImportWizardModal({
               <div className="h-10 w-10 rounded-lg bg-surface border border-border grid place-items-center">
                 <Upload className="h-4 w-4 text-foreground-muted" />
               </div>
-              <p className="text-[13px] font-medium text-foreground">Drop a CSV or click to browse</p>
-              <p className="text-[11.5px] text-foreground-subtle">First row must be column headers</p>
+              <p className="text-[13px] font-medium text-foreground">
+                Drop a CSV or click to browse
+              </p>
+              <p className="text-[11.5px] text-foreground-subtle">
+                First row must be column headers
+              </p>
               <input
                 ref={inputRef}
                 type="file"
                 accept=".csv,text/csv"
                 className="hidden"
-                onChange={(e) => { const f = e.target.files?.[0]; if (f) void handleFile(f); }}
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) void handleFile(f);
+                }}
               />
             </label>
           </div>
@@ -360,7 +445,11 @@ export function ImportWizardModal({
               <p className="text-[12.5px] font-medium text-foreground flex-1">
                 {headers.length} columns · {dataRows.length} rows detected
               </p>
-              <button onClick={reset} className="h-7 w-7 grid place-items-center rounded-md border border-border text-foreground-muted hover:text-foreground" aria-label="Clear">
+              <button
+                onClick={reset}
+                className="h-7 w-7 grid place-items-center rounded-md border border-border text-foreground-muted hover:text-foreground"
+                aria-label="Clear"
+              >
                 <X className="h-3.5 w-3.5" />
               </button>
             </div>
@@ -368,23 +457,45 @@ export function ImportWizardModal({
               <div className="overflow-x-auto max-h-64">
                 <table className="w-full text-[11.5px]">
                   <thead className="bg-surface-muted/60 sticky top-0">
-                    <tr>{headers.map((h, i) => <th key={i} className="px-2.5 py-2 text-left font-medium text-foreground-muted whitespace-nowrap">{h}</th>)}</tr>
+                    <tr>
+                      {headers.map((h, i) => (
+                        <th
+                          key={i}
+                          className="px-2.5 py-2 text-left font-medium text-foreground-muted whitespace-nowrap"
+                        >
+                          {h}
+                        </th>
+                      ))}
+                    </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
                     {dataRows.slice(0, 8).map((r, i) => (
-                      <tr key={i}>{headers.map((_, j) => <td key={j} className="px-2.5 py-1.5 text-foreground truncate max-w-[160px]">{r[j] ?? ""}</td>)}</tr>
+                      <tr key={i}>
+                        {headers.map((_, j) => (
+                          <td
+                            key={j}
+                            className="px-2.5 py-1.5 text-foreground truncate max-w-[160px]"
+                          >
+                            {r[j] ?? ""}
+                          </td>
+                        ))}
+                      </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
             </div>
-            <p className="text-[11px] text-foreground-subtle">Showing first 8 of {dataRows.length} rows.</p>
+            <p className="text-[11px] text-foreground-subtle">
+              Showing first 8 of {dataRows.length} rows.
+            </p>
           </div>
         )}
 
         {step === 3 && (
           <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
-            <p className="text-[11px] uppercase tracking-wider text-foreground-subtle">Field mapping</p>
+            <p className="text-[11px] uppercase tracking-wider text-foreground-subtle">
+              Field mapping
+            </p>
             {spec.fields.map((f) => (
               <div key={f.key} className="flex items-center gap-2">
                 <label className="text-[12.5px] text-foreground w-48 shrink-0">
@@ -393,10 +504,19 @@ export function ImportWizardModal({
                 </label>
                 <Select
                   value={mapping[f.key] == null ? "" : String(mapping[f.key])}
-                  onChange={(e) => setMapping((m) => ({ ...m, [f.key]: e.target.value === "" ? null : Number(e.target.value) }))}
+                  onChange={(e) =>
+                    setMapping((m) => ({
+                      ...m,
+                      [f.key]: e.target.value === "" ? null : Number(e.target.value),
+                    }))
+                  }
                 >
                   <option value="">— Skip —</option>
-                  {headers.map((h, i) => <option key={i} value={i}>{h}</option>)}
+                  {headers.map((h, i) => (
+                    <option key={i} value={i}>
+                      {h}
+                    </option>
+                  ))}
                 </Select>
               </div>
             ))}
@@ -409,30 +529,56 @@ export function ImportWizardModal({
               <p className="text-[11px] uppercase tracking-wider text-foreground-subtle flex items-center gap-1.5">
                 <Sparkles className="h-3 w-3" /> AI Assistance
               </p>
-              <Toggle label="Clean & normalize (domains, phones, emails, casing)" checked={clean.normalize} onChange={(v) => setClean((c) => ({ ...c, normalize: v }))} />
-              <Toggle label="Detect duplicates and skip them" checked={clean.detectDuplicates} onChange={(v) => setClean((c) => ({ ...c, detectDuplicates: v }))} />
+              <Toggle
+                label="Clean & normalize (domains, phones, emails, casing)"
+                checked={clean.normalize}
+                onChange={(v) => setClean((c) => ({ ...c, normalize: v }))}
+              />
+              <Toggle
+                label="Detect duplicates and skip them"
+                checked={clean.detectDuplicates}
+                onChange={(v) => setClean((c) => ({ ...c, detectDuplicates: v }))}
+              />
               {(entity === "leads" || entity === "contacts") && (
-                <Toggle label="Auto-link contacts/leads to companies (create if missing)" checked={clean.autoLinkCompanies} onChange={(v) => setClean((c) => ({ ...c, autoLinkCompanies: v }))} />
+                <Toggle
+                  label="Auto-link contacts/leads to companies (create if missing)"
+                  checked={clean.autoLinkCompanies}
+                  onChange={(v) => setClean((c) => ({ ...c, autoLinkCompanies: v }))}
+                />
               )}
               {entity === "companies" && (
-                <Toggle label="Infer missing company names from domains" checked={clean.inferCompanyName} onChange={(v) => setClean((c) => ({ ...c, inferCompanyName: v }))} />
+                <Toggle
+                  label="Infer missing company names from domains"
+                  checked={clean.inferCompanyName}
+                  onChange={(v) => setClean((c) => ({ ...c, inferCompanyName: v }))}
+                />
               )}
             </div>
 
             <div className="rounded-lg border border-border bg-surface-muted/40 p-3">
-              <p className="text-[11px] uppercase tracking-wider text-foreground-subtle mb-2">Validation preview</p>
+              <p className="text-[11px] uppercase tracking-wider text-foreground-subtle mb-2">
+                Validation preview
+              </p>
               <ul className="text-[12px] text-foreground-muted space-y-1">
-                {spec.fields.filter((f) => f.required).map((f) => {
-                  const missing = missingCounts[f.key] ?? 0;
-                  const bad = missing > 0;
-                  return (
-                    <li key={f.key} className="flex items-center gap-2">
-                      {bad ? <AlertCircle className="h-3 w-3 text-red-500" /> : <CheckCircle2 className="h-3 w-3 text-emerald-500" />}
-                      <span className="text-foreground">{f.label}</span>
-                      <span>· {bad ? `${missing} rows missing this field` : "all rows have a value"}</span>
-                    </li>
-                  );
-                })}
+                {spec.fields
+                  .filter((f) => f.required)
+                  .map((f) => {
+                    const missing = missingCounts[f.key] ?? 0;
+                    const bad = missing > 0;
+                    return (
+                      <li key={f.key} className="flex items-center gap-2">
+                        {bad ? (
+                          <AlertCircle className="h-3 w-3 text-red-500" />
+                        ) : (
+                          <CheckCircle2 className="h-3 w-3 text-emerald-500" />
+                        )}
+                        <span className="text-foreground">{f.label}</span>
+                        <span>
+                          · {bad ? `${missing} rows missing this field` : "all rows have a value"}
+                        </span>
+                      </li>
+                    );
+                  })}
                 {clean.detectDuplicates && (
                   <li className="flex items-center gap-2 text-foreground-muted">
                     <Sparkles className="h-3 w-3" /> {dupPreview} in-file duplicates will be skipped
@@ -451,12 +597,18 @@ export function ImportWizardModal({
             <div className="h-2 w-full rounded-full bg-surface-muted overflow-hidden">
               <div
                 className="h-full bg-foreground transition-[width] duration-200"
-                style={{ width: `${progress.total === 0 ? 0 : Math.round((progress.done / progress.total) * 100)}%` }}
+                style={{
+                  width: `${progress.total === 0 ? 0 : Math.round((progress.done / progress.total) * 100)}%`,
+                }}
               />
             </div>
             <div className="flex items-center justify-between text-[11.5px] text-foreground-muted tabular-nums">
-              <span>{progress.done} / {progress.total} rows</span>
-              <span>{progress.inserted} inserted · {progress.failed} failed</span>
+              <span>
+                {progress.done} / {progress.total} rows
+              </span>
+              <span>
+                {progress.inserted} inserted · {progress.failed} failed
+              </span>
             </div>
           </div>
         )}
@@ -464,12 +616,19 @@ export function ImportWizardModal({
         {step === 6 && finished && (
           <div className="space-y-3">
             <div className="rounded-lg border border-border bg-surface p-4 flex items-start gap-3">
-              {progress.inserted > 0 ? <CheckCircle2 className="h-4 w-4 text-emerald-500 mt-0.5" /> : <AlertCircle className="h-4 w-4 text-red-500 mt-0.5" />}
+              {progress.inserted > 0 ? (
+                <CheckCircle2 className="h-4 w-4 text-emerald-500 mt-0.5" />
+              ) : (
+                <AlertCircle className="h-4 w-4 text-red-500 mt-0.5" />
+              )}
               <div className="flex-1">
                 <p className="text-[13px] font-medium text-foreground">
-                  Imported <span className="tabular-nums">{progress.inserted}</span> · Failed <span className="tabular-nums">{progress.failed}</span>
+                  Imported <span className="tabular-nums">{progress.inserted}</span> · Failed{" "}
+                  <span className="tabular-nums">{progress.failed}</span>
                 </p>
-                <p className="text-[11.5px] text-foreground-subtle mt-0.5">Out of {progress.total} rows.</p>
+                <p className="text-[11.5px] text-foreground-subtle mt-0.5">
+                  Out of {progress.total} rows.
+                </p>
               </div>
               {errors.length > 0 && (
                 <GhostBtn onClick={downloadErrorReport}>
@@ -481,11 +640,17 @@ export function ImportWizardModal({
               <div className="rounded-lg border border-border overflow-hidden max-h-56 overflow-y-auto">
                 <table className="w-full text-[11.5px]">
                   <thead className="bg-surface-muted/60 sticky top-0">
-                    <tr><th className="px-2.5 py-2 text-left font-medium">Row</th><th className="px-2.5 py-2 text-left font-medium">Reason</th></tr>
+                    <tr>
+                      <th className="px-2.5 py-2 text-left font-medium">Row</th>
+                      <th className="px-2.5 py-2 text-left font-medium">Reason</th>
+                    </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
                     {errors.slice(0, 100).map((e, i) => (
-                      <tr key={i}><td className="px-2.5 py-1.5 tabular-nums">{e.row}</td><td className="px-2.5 py-1.5 text-foreground-muted">{e.reason}</td></tr>
+                      <tr key={i}>
+                        <td className="px-2.5 py-1.5 tabular-nums">{e.row}</td>
+                        <td className="px-2.5 py-1.5 text-foreground-muted">{e.reason}</td>
+                      </tr>
                     ))}
                   </tbody>
                 </table>
@@ -504,9 +669,19 @@ export function ImportWizardModal({
             )}
           </div>
           <div className="flex items-center gap-2">
-            {!finished && <GhostBtn onClick={handleClose} disabled={running}>Cancel</GhostBtn>}
+            {!finished && (
+              <GhostBtn onClick={handleClose} disabled={running}>
+                Cancel
+              </GhostBtn>
+            )}
             {step === 4 && (
-              <PrimaryBtn onClick={() => { setStep(5); void runImport(); }} disabled={!canNext}>
+              <PrimaryBtn
+                onClick={() => {
+                  setStep(5);
+                  void runImport();
+                }}
+                disabled={!canNext}
+              >
                 Start import <ArrowRight className="h-3 w-3" />
               </PrimaryBtn>
             )}
@@ -518,7 +693,9 @@ export function ImportWizardModal({
             {step === 6 && finished && (
               <>
                 {errors.some((e) => !/^Missing required|^Duplicate/i.test(e.reason)) && (
-                  <GhostBtn onClick={retryFailedRows} disabled={running}>Retry failed</GhostBtn>
+                  <GhostBtn onClick={retryFailedRows} disabled={running}>
+                    Retry failed
+                  </GhostBtn>
                 )}
                 <PrimaryBtn onClick={handleClose}>Close</PrimaryBtn>
               </>
@@ -540,10 +717,18 @@ function Stepper({ step }: { step: Step }) {
         const done = n < step;
         return (
           <li key={label} className="flex items-center gap-1.5">
-            <span className={`h-4 w-4 grid place-items-center rounded-full text-[9px] font-medium ${active ? "bg-foreground text-background" : done ? "bg-surface-muted text-foreground border border-border" : "bg-surface border border-border"}`}>
+            <span
+              className={`h-4 w-4 grid place-items-center rounded-full text-[9px] font-medium ${active ? "bg-foreground text-background" : done ? "bg-surface-muted text-foreground border border-border" : "bg-surface border border-border"}`}
+            >
               {n}
             </span>
-            <span className={active ? "text-foreground font-medium" : done ? "text-foreground-muted" : ""}>{label}</span>
+            <span
+              className={
+                active ? "text-foreground font-medium" : done ? "text-foreground-muted" : ""
+              }
+            >
+              {label}
+            </span>
             {i < items.length - 1 && <span className="text-border">›</span>}
           </li>
         );
@@ -552,10 +737,23 @@ function Stepper({ step }: { step: Step }) {
   );
 }
 
-function Toggle({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
+function Toggle({
+  label,
+  checked,
+  onChange,
+}: {
+  label: string;
+  checked: boolean;
+  onChange: (v: boolean) => void;
+}) {
   return (
     <label className="flex items-center gap-2 cursor-pointer">
-      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="h-3.5 w-3.5 rounded border-border" />
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={(e) => onChange(e.target.checked)}
+        className="h-3.5 w-3.5 rounded border-border"
+      />
       <span className="text-[12.5px] text-foreground">{label}</span>
     </label>
   );
