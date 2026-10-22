@@ -59,47 +59,61 @@ function LoadingPage() {
 
 export function App() {
   const queryClient = useMemo(() => new QueryClient(), []);
-  return <QueryClientProvider client={queryClient}><AuthProvider><BrowserRouter><OfflineBanner /><AppErrorBoundary><Suspense fallback={<LoadingPage />}><Routes>
-    <Route path="/" element={<IndexPage />} />
-    <Route path="/login" element={<LoginPage />} />
-    <Route path="/signup" element={<SignupPage />} />
-    <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-    <Route path="/reset-password" element={<ResetPasswordPage />} />
-    <Route path="/magic-link" element={<MagicLinkPage />} />
-    <Route path="/onboarding" element={<OnboardingPage />} />
-    <Route path="/workspace" element={<WorkspacePage />} />
-    <Route path="/workspace-new" element={<WorkspaceNewPage />} />
-    <Route path="/workspace-invite" element={<WorkspaceInvitePage />} />
-    <Route path="/privacy" element={<PrivacyPage />} />
-    <Route path="/terms" element={<TermsPage />} />
-    <Route path="/security" element={<SecurityPage />} />
-    <Route path="/lovable/oauth/consent" element={<ConsentPage />} />
-    <Route path="/.lovable/oauth/consent" element={<ConsentPage />} />
-    <Route element={<ShellLayout />}>
-      <Route path="/dashboard" element={<DashboardPage />} />
-      <Route path="/leads" element={<LeadsPage />} />
-      <Route path="/lead/:id" element={<LeadDetailPage />} />
-      <Route path="/companies" element={<CompaniesPage />} />
-      <Route path="/company/:id" element={<CompanyDetailPage />} />
-      <Route path="/campaigns" element={<CampaignsPage />} />
-      <Route path="/campaigns/:id" element={<CampaignDetailPage />} />
-      <Route path="/emails" element={<EmailsPage />} />
-      <Route path="/meetings" element={<MeetingsPage />} />
-      <Route path="/crm" element={<CRMPage />} />
-      <Route path="/research" element={<ResearchPage />} />
-      <Route path="/copilot" element={<CopilotPage />} />
-      <Route path="/analytics" element={<AnalyticsPage />} />
-      <Route path="/calendar" element={<CalendarPage />} />
-      <Route path="/integrations" element={<IntegrationsPage />} />
-      <Route path="/settings" element={<SettingsPage />} />
-      <Route path="/templates" element={<TemplatesPage />} />
-      <Route path="/followups" element={<FollowupsPage />} />
-      <Route path="/billing" element={<BillingPage />} />
-      <Route path="/team" element={<TeamPage />} />
-      <Route path="/profile" element={<ProfilePage />} />
-    </Route>
-    <Route path="*" element={<NotFound />} />
-  </Routes></Suspense></AppErrorBoundary><Toaster position="top-right" richColors /></BrowserRouter></AuthProvider></QueryClientProvider>;
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AppErrorBoundary>
+        <AuthProvider>
+          <BrowserRouter>
+            <OfflineBanner />
+            <Suspense fallback={<LoadingPage />}>
+              <Routes>
+                <Route path="/" element={<IndexPage />} />
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/signup" element={<SignupPage />} />
+                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                <Route path="/reset-password" element={<ResetPasswordPage />} />
+                <Route path="/magic-link" element={<MagicLinkPage />} />
+                <Route path="/onboarding" element={<OnboardingPage />} />
+                <Route path="/workspace" element={<WorkspacePage />} />
+                <Route path="/workspace-new" element={<WorkspaceNewPage />} />
+                <Route path="/workspace-invite" element={<WorkspaceInvitePage />} />
+                <Route path="/privacy" element={<PrivacyPage />} />
+                <Route path="/terms" element={<TermsPage />} />
+                <Route path="/security" element={<SecurityPage />} />
+                <Route path="/lovable/oauth/consent" element={<ConsentPage />} />
+                <Route path="/.lovable/oauth/consent" element={<ConsentPage />} />
+                <Route element={<ShellLayout />}>
+                  <Route path="/dashboard" element={<DashboardPage />} />
+                  <Route path="/leads" element={<LeadsPage />} />
+                  <Route path="/lead/:id" element={<LeadDetailPage />} />
+                  <Route path="/companies" element={<CompaniesPage />} />
+                  <Route path="/company/:id" element={<CompanyDetailPage />} />
+                  <Route path="/campaigns" element={<CampaignsPage />} />
+                  <Route path="/campaigns/:id" element={<CampaignDetailPage />} />
+                  <Route path="/emails" element={<EmailsPage />} />
+                  <Route path="/meetings" element={<MeetingsPage />} />
+                  <Route path="/crm" element={<CRMPage />} />
+                  <Route path="/research" element={<ResearchPage />} />
+                  <Route path="/copilot" element={<CopilotPage />} />
+                  <Route path="/analytics" element={<AnalyticsPage />} />
+                  <Route path="/calendar" element={<CalendarPage />} />
+                  <Route path="/integrations" element={<IntegrationsPage />} />
+                  <Route path="/settings" element={<SettingsPage />} />
+                  <Route path="/templates" element={<TemplatesPage />} />
+                  <Route path="/followups" element={<FollowupsPage />} />
+                  <Route path="/billing" element={<BillingPage />} />
+                  <Route path="/team" element={<TeamPage />} />
+                  <Route path="/profile" element={<ProfilePage />} />
+                </Route>
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Suspense>
+            <Toaster position="top-right" richColors />
+          </BrowserRouter>
+        </AuthProvider>
+      </AppErrorBoundary>
+    </QueryClientProvider>
+  );
 }
 
 export default App;

@@ -15,15 +15,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => {
-      setSession(s);
+    let sub: { subscription: { unsubscribe: () => void } } | undefined;
+    try {
+      const res = supabase.auth.onAuthStateChange((_event, s) => {
+        setSession(s);
+        setLoading(false);
+      });
+      sub = res.data;
+      supabase.auth.getSession().then(({ data }) => {
+        setSession(data?.session ?? null);
+        setLoading(false);
+      }).catch((err) => {
+        console.warn("[Auth] Failed to fetch session:", err);
+        setLoading(false);
+      });
+    } catch (err) {
+      console.warn("[Auth] Supabase initialization failed or missing credentials:", err);
       setLoading(false);
-    });
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
-      setLoading(false);
-    });
-    return () => sub.subscription.unsubscribe();
+    }
+    return () => sub?.subscription?.unsubscribe();
   }, []);
 
   return (
