@@ -18,7 +18,7 @@ if (production) {
   ({ dispatchRPC, dispatchAPI } = await import("../dist/server/rpc-entry.js"));
 } else {
   const { createServer: createViteServer } = await import("vite");
-  vite = await createViteServer({ configFile: resolve(root, "vite.config.ts"), server: { middlewareMode: true }, appType: "custom" });
+  vite = await createViteServer({ configFile: resolve(root, "vite.config.ts"), server: { middlewareMode: true }, appType: "spa" });
   ({ dispatchRPC, dispatchAPI } = await vite.ssrLoadModule("/src/server/rpc-entry.ts"));
 }
 
@@ -139,7 +139,17 @@ const server = createServer(async (req, res) => {
   if (path === "/api/cron/scheduled-emails") return handleCron(req, res, path);
   if (path === "/api/ai/ask" || path === "/api/ai/copilot-plan") return handleAIEndpoint(req, res, path);
   if (production) return serveStatic(req, res);
-  vite.middlewares(req, res, () => { res.writeHead(404); res.end("Not found"); });
+  vite.middlewares(req, res, async () => {
+    try {
+      let template = await readFile(resolve(root, "index.html"), "utf-8");
+      template = await vite.transformIndexHtml(req.url, template);
+      res.writeHead(200, { "content-type": "text/html; charset=utf-8" });
+      res.end(template);
+    } catch {
+      res.writeHead(404);
+      res.end("Not found");
+    }
+  });
 });
 
 const port = Number(process.env.PORT || 8080);

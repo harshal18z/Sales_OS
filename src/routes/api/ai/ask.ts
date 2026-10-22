@@ -268,67 +268,16 @@ async function gatherContext(
   return { ctx, citations };
 }
 
-async function streamFromLovable(
+async function streamAIResponse(
   question: string,
   ctx: Record<string, unknown>,
   onToken: (t: string) => void,
 ): Promise<string> {
-  const key = process.env.LOVABLE_API_KEY;
-  if (!key) throw new Error("Missing LOVABLE_API_KEY");
-  const model = process.env.AI_MODEL || "google/gemini-2.5-flash";
-
+  const { streamAI } = await import("@/lib/ai/provider.server");
   const system = `You are the SalesOS AI Command Center. Answer questions about the user's CRM using ONLY the supplied JSON context. Be concise, specific, and actionable. Use short paragraphs, bullet lists, and bold for names. When you reference a record, cite it inline like [lead:<id>], [deal:<id>], [company:<id>], [email:<id>], [meeting:<id>], [research:<id>], [campaign:<id>]. If information is not present in the context, say so briefly. Never invent IDs or values.`;
   const user = `QUESTION: ${question}\n\nCRM CONTEXT (JSON):\n${JSON.stringify(ctx).slice(0, 60000)}`;
 
-  const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-      authorization: `Bearer ${key}`,
-    },
-    body: JSON.stringify({
-      model,
-      stream: true,
-      messages: [
-        { role: "system", content: system },
-        { role: "user", content: user },
-      ],
-    }),
-  });
-  if (!res.ok || !res.body) {
-    throw new Error(`AI ${res.status}: ${await res.text().catch(() => "")}`);
-  }
-
-  const reader = res.body.getReader();
-  const dec = new TextDecoder();
-  let buf = "";
-  let full = "";
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    buf += dec.decode(value, { stream: true });
-    let idx: number;
-    while ((idx = buf.indexOf("\n")) >= 0) {
-      const line = buf.slice(0, idx).trim();
-      buf = buf.slice(idx + 1);
-      if (!line.startsWith("data:")) continue;
-      const payload = line.slice(5).trim();
-      if (payload === "[DONE]") return full;
-      try {
-        const j = JSON.parse(payload) as {
-          choices?: { delta?: { content?: string } }[];
-        };
-        const delta = j.choices?.[0]?.delta?.content;
-        if (delta) {
-          full += delta;
-          onToken(delta);
-        }
-      } catch {
-        // ignore malformed chunks
-      }
-    }
-  }
-  return full;
+  return streamAI({ system, user, onToken });
 }
 
 export const Route = createFileRoute("/api/ai/ask")({
@@ -439,7 +388,7 @@ export const Route = createFileRoute("/api/ai/ask")({
               send({ type: "citations", items: citations });
 
               let full = "";
-              await streamFromLovable(question, ctx, (t) => {
+              await streamAIResponse(question, ctx, (t) => {
                 full += t;
                 send({ type: "token", text: t });
               });

@@ -5,19 +5,25 @@
 
 type ChatMsg = { role: "system" | "user" | "assistant"; content: string };
 
-export type ProviderId = "lovable" | "openai" | "anthropic" | "gemini" | "groq";
-
-const DEFAULT_MODELS: Record<ProviderId, string> = {
+export type ProviderId = "lovable" | "openai" | "anthropic" | "gemini" | "groq";const DEFAULT_MODELS: Record<ProviderId, string> = {
   lovable: "google/gemini-2.5-flash",
   openai: "gpt-4o-mini",
   anthropic: "claude-3-5-sonnet-latest",
-  gemini: "gemini-2.0-flash",
+  gemini: "gemini-3.5-flash-lite",
   groq: "llama-3.3-70b-versatile",
 };
 
-function pickProvider(): { id: ProviderId; apiKey: string; model: string } {
-  const id = ((process.env.AI_PROVIDER as ProviderId) || "lovable") as ProviderId;
-  const model = process.env.AI_MODEL || DEFAULT_MODELS[id];
+export function pickProvider(): { id: ProviderId; apiKey: string; model: string } {
+  let id = (process.env.AI_PROVIDER as ProviderId);
+  if (!id) {
+    if (process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY) id = "gemini";
+    else if (process.env.OPENAI_API_KEY) id = "openai";
+    else if (process.env.ANTHROPIC_API_KEY) id = "anthropic";
+    else if (process.env.GROQ_API_KEY) id = "groq";
+    else if (process.env.LOVABLE_API_KEY) id = "lovable";
+    else id = "gemini";
+  }
+  const model = process.env.AI_MODEL || DEFAULT_MODELS[id] || "gemini-3.5-flash-lite";
   const keyEnv: Record<ProviderId, string> = {
     lovable: "LOVABLE_API_KEY",
     openai: "OPENAI_API_KEY",
@@ -25,7 +31,10 @@ function pickProvider(): { id: ProviderId; apiKey: string; model: string } {
     gemini: "GEMINI_API_KEY",
     groq: "GROQ_API_KEY",
   };
-  const apiKey = process.env[keyEnv[id]];
+  const apiKey =
+    process.env[keyEnv[id]] ||
+    (id === "gemini" ? process.env.VITE_GEMINI_API_KEY : undefined) ||
+    process.env.GEMINI_API_KEY;
   if (!apiKey) throw new Error(`Missing ${keyEnv[id]} for provider "${id}"`);
   return { id, apiKey, model };
 }
@@ -105,7 +114,8 @@ async function geminiChat(
   const data = (await res.json()) as {
     candidates?: { content?: { parts?: { text?: string }[] } }[];
   };
-  return data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+  const parts = data.candidates?.[0]?.content?.parts || [];
+  return parts.map((p) => p.text || "").join("");
 }
 
 export async function aiChat(opts: {
@@ -145,6 +155,127 @@ export async function aiJSON<T = unknown>(opts: { system?: string; user: string 
   }
 }
 
+export async function streamAI(opts: {
+  system?: string;
+  user: string;
+  onToken: (token: string) => void;
+}): Promise<string> {
+  const { id, apiKey, model } = pickProvider();
+  const messages: ChatMsg[] = [];
+  if (opts.system) messages.push({ role: "system", content: opts.system });
+  messages.push({ role: "user", content: opts.user });
+
+  if (id === "gemini") {
+    const system = messages.filter((m) => m.role === "system").map((m) => m.content).join("\n\n");
+    const contents = messages
+      .filter((m) => m.role !== "system")
+      .map((m) => ({ role: m.role === "assistant" ? "model" : "user", parts: [{ text: m.content }] }));
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse&key=${apiKey}`;
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        contents,
+        systemInstruction: system ? { parts: [{ text: system }] } : undefined,
+      }),
+    });
+    if (!res.ok || !res.body) {
+      throw new Error(`Gemini ${res.status}: ${await res.text().catch(() => "")}`);
+    }
+    const reader = res.body.getReader();
+    const dec = new TextDecoder();
+    let buf = "";
+    let full = "";
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += dec.decode(value, { stream: true });
+      let idx: number;
+      while ((idx = buf.indexOf("\n")) >= 0) {
+        const line = buf.slice(0, idx).trim();
+        buf = buf.slice(idx + 1);
+        if (!line.startsWith("data:")) continue;
+        const payload = line.slice(5).trim();
+        if (!payload || payload === "[DONE]") continue;
+        try {
+          const j = JSON.parse(payload) as {
+            candidates?: { content?: { parts?: { text?: string }[] } }[];
+          };
+          const parts = j.candidates?.[0]?.content?.parts || [];
+          for (const p of parts) {
+            if (p.text) {
+              full += p.text;
+              opts.onToken(p.text);
+            }
+          }
+        } catch {
+          // ignore malformed chunks
+        }
+      }
+    }
+    return full;
+  }
+
+  const baseUrls: Record<string, string> = {
+    lovable: "https://ai.gateway.lovable.dev/v1",
+    openai: "https://api.openai.com/v1",
+    groq: "https://api.groq.com/openai/v1",
+  };
+  const baseUrl = baseUrls[id];
+  if (baseUrl) {
+    const res = await fetch(`${baseUrl}/chat/completions`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model,
+        stream: true,
+        messages,
+      }),
+    });
+    if (!res.ok || !res.body) {
+      throw new Error(`AI ${res.status}: ${await res.text().catch(() => "")}`);
+    }
+    const reader = res.body.getReader();
+    const dec = new TextDecoder();
+    let buf = "";
+    let full = "";
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += dec.decode(value, { stream: true });
+      let idx: number;
+      while ((idx = buf.indexOf("\n")) >= 0) {
+        const line = buf.slice(0, idx).trim();
+        buf = buf.slice(idx + 1);
+        if (!line.startsWith("data:")) continue;
+        const payload = line.slice(5).trim();
+        if (payload === "[DONE]") return full;
+        try {
+          const j = JSON.parse(payload) as {
+            choices?: { delta?: { content?: string } }[];
+          };
+          const delta = j.choices?.[0]?.delta?.content;
+          if (delta) {
+            full += delta;
+            opts.onToken(delta);
+          }
+        } catch {
+          // ignore malformed chunks
+        }
+      }
+    }
+    return full;
+  }
+
+  // Fallback for providers without streaming (e.g. anthropic)
+  const full = await aiChat({ system: opts.system, user: opts.user });
+  opts.onToken(full);
+  return full;
+}
+
 export function activeProvider(): ProviderId {
-  return ((process.env.AI_PROVIDER as ProviderId) || "lovable") as ProviderId;
+  return pickProvider().id;
 }

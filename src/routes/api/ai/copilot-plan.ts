@@ -41,10 +41,8 @@ function makeSupabase(token: string) {
   });
 }
 
-async function callLLM(message: string, catalog: unknown) {
-  const key = process.env.LOVABLE_API_KEY;
-  if (!key) throw new Error("Missing LOVABLE_API_KEY");
-  const model = process.env.AI_MODEL || "google/gemini-2.5-flash";
+async function callLLM(message: string, catalog: unknown): Promise<{ reply?: string; steps?: Step[] }> {
+  const { aiJSON } = await import("@/lib/ai/provider.server");
 
   const system = `You are the SalesOS AI Sales Copilot planner. Turn the user's natural-language request into a short JSON plan that orchestrates existing SalesOS modules. NEVER invent business logic — only pick from the allowed tools.
 
@@ -68,25 +66,11 @@ Rules:
 
   const user = `USER REQUEST: ${message}\n\nCATALOG (recent workspace entities):\n${JSON.stringify(catalog).slice(0, 20000)}`;
 
-  const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-    method: "POST",
-    headers: { "content-type": "application/json", authorization: `Bearer ${key}` },
-    body: JSON.stringify({
-      model,
-      messages: [
-        { role: "system", content: system },
-        { role: "user", content: user },
-      ],
-      response_format: { type: "json_object" },
-    }),
-  });
-  if (!res.ok) throw new Error(`AI ${res.status}: ${await res.text().catch(() => "")}`);
-  const j = (await res.json()) as { choices?: { message?: { content?: string } }[] };
-  const raw = j.choices?.[0]?.message?.content ?? "{}";
   try {
-    return JSON.parse(raw) as { reply?: string; steps?: Step[] };
-  } catch {
-    return { reply: raw, steps: [] };
+    const res = await aiJSON<{ reply?: string; steps?: Step[] }>({ system, user });
+    return { reply: res.reply || "", steps: Array.isArray(res.steps) ? res.steps : [] };
+  } catch (err) {
+    return { reply: err instanceof Error ? err.message : String(err), steps: [] };
   }
 }
 
